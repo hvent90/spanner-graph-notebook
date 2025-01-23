@@ -60,3 +60,7 @@ class GraphObject {
         this.instantiated = true;
     }
 }
+
+if (process && process.versions && process.versions.node) {
+    module.exports = GraphObject;
+}
