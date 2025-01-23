@@ -147,5 +147,6 @@ Dockerfile
 .dockerignore
 
 # Javascript
-node_modules
-package-lock.json
+/templates/spanner-graph/node_modules
+/templates/spanner-graph/package-lock.json
+/templates/spanner-graph/coverage/
