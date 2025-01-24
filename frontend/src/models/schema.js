@@ -363,5 +363,5 @@ class Schema {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = Schema;
 } else if (typeof window !== 'undefined') {
-    window.Edge = Schema;
+    window.Schema = Schema;
 }

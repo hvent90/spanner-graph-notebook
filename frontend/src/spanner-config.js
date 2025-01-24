@@ -13,6 +13,17 @@
  * limitations under the License.
  */
 
+let Node, Edge, Schema;
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    Node = require('./models/node');
+    Edge = require('./models/edge');
+    Schema = require('./models/schema');
+} else {
+    Node = window.Node;
+    Edge = window.Edge;
+    Schema = window.Schema;
+}
+
 class GraphConfig {
 
     /**
@@ -291,7 +302,7 @@ class GraphConfig {
                 console.error('Unable to instantiate node', node.instantiationErrorReason);
                 return;
             }
-            if (node instanceof Node) {
+            if (node instanceof Node && node.instantiated) {
                 nodes.push(node);
             } else {
                 node.instantiationErrorReason = 'Could not construct an instance of Node';
@@ -332,4 +343,11 @@ class GraphConfig {
 
         return edges;
     }
+}
+
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = GraphConfig;
+} else if (typeof window !== 'undefined') {
+    window.GraphConfig = GraphConfig;
 }

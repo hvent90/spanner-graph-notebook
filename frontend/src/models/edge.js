@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-let GraphObject;
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     GraphObject = require('./graph-object');
 } else {
