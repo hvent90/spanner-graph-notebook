@@ -359,3 +359,9 @@ class Schema {
         return table.labelNames[0];
     }
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Schema;
+} else if (typeof window !== 'undefined') {
+    window.Edge = Schema;
+}
