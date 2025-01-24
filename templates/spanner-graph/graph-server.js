@@ -88,3 +88,7 @@ class GraphServer {
             });
     }
 }
+
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    module.exports = GraphServer;
+}

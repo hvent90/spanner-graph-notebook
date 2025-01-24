@@ -61,6 +61,6 @@ class GraphObject {
     }
 }
 
-if (process && process.versions && process.versions.node) {
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     module.exports = GraphObject;
 }
