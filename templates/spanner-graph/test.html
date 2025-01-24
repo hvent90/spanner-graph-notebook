@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spanner Graph Visualization Tests</title>
+    <style>
+        .dots {
+            background-image: url('./graph-bg.svg');
+            background-repeat: repeat;
+        }
+    </style>
+    <script src="models/schema.js"></script>
+    <script src="models/graph-object.js"></script>
+    <script src="models/node.js"></script>
+    <script src="models/edge.js"></script>
+    <script src="spanner-config.js"></script>
+    <script src="visualization/spanner-menu.js"></script>
+    <script src="visualization/spanner-forcegraph.js"></script>
+    <script src="spanner-store.js"></script>
+    <script src="visualization/spanner-sidebar.js"></script>
+    <script src="visualization/spanner-table.js"></script>
+    <script src="graph-server.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+<div class="mount-spanner-test"></div>
+<script>
+    let initialized = false;
+
+    function loadScript(url) {
+        return new Promise((resolve, reject) => {
+            if (document.querySelector(`script[src='${url}']`)) {
+                return resolve();
+            }
+
+            const script = document.createElement('script');
+            script.className = 'spannerviz-external-dependency'
+            script.src = url;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    Promise.all([
+        loadScript('https://d3js.org/d3.v5.min.js'),
+        loadScript('https://unpkg.com/d3-dsv'),
+        loadScript('https://unpkg.com/d3-force'),
+        loadScript('https://unpkg.com/force-graph')
+    ]).then(() => {
+        if (window && typeof window.onCustomEvent === 'function') {
+            window.onCustomEvent('page ready');
+        }
+
+        const id = 'spanner-test';
+        const project = 'project-foo';
+        const instance = 'instance-foo';
+        const database = 'database-foo';
+        const mount = document.querySelector('.mount-spanner-test');
+        const app = new SpannerApp({
+            id, project, instance, database, mount, mock: true, query: '', url: ''
+        });
+    });
+
+</script>
+</body>
+</html>
