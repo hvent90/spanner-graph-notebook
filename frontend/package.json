@@ -2,9 +2,9 @@
   "name": "spanner-graph",
   "version": "1.0.0",
   "scripts": {
-    "test": "npm run test:unit",
-    "test:unit": "TEST_TYPE=unit jest",
-    "test:visual": "TEST_TYPE=visual jest ",
+    "test": "SUPRESS_LOGS=true npm run test:unit",
+    "test:unit": "TEST_TYPE=unit SUPRESS_LOGS=true jest",
+    "test:visual": "TEST_TYPE=visual SUPRESS_LOGS=true jest ",
     "test:serve-content": "node tests/serve-content.js"
   },
   "author": "",

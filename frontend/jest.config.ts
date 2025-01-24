@@ -107,7 +107,7 @@ const config: Config = {
     'visual': 'jest-puppeteer',
     'unit': 'ts-jest'
     // @ts-ignore
-  }[process.env.TEST_TYPE] ?? 'ts-puppeteer',
+  }[process.env.TEST_TYPE] ?? 'ts-jest',
 
   // Run tests from one or more projects
   // projects: undefined,
@@ -133,9 +133,8 @@ const config: Config = {
   // A list of paths to directories that Jest should use to search for files in
   // @ts-ignore
   roots: [
-    !process.env.TEST_TYPE && './tests',
     process.env.TEST_TYPE === 'visual' && './tests/visual',
-    process.env.TEST_TYPE === 'unit' && './tests/unit',
+    (!process.env.TEST_TYPE || process.env.TEST_TYPE === 'unit') && './tests/unit',
   ].filter(Boolean),
 
 
@@ -147,7 +146,7 @@ const config: Config = {
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   setupFilesAfterEnv: [
-    './tests/jest-snapshot-setup.ts'
+    './tests/jest.setup.ts'
   ],
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
