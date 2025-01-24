@@ -31,7 +31,7 @@ class ServeFrontend {
             });
 
             this.server.listen(8080, () => {
-                console.log('Frontend content is served at http://localhost:8080/test.html');
+                console.log('Frontend content is served at http://localhost:8080/static/test.html');
             });
         });
     }

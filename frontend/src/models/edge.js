@@ -13,6 +13,13 @@
  * limitations under the License.
  */
 
+let GraphObject;
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    GraphObject = require('./graph-object');
+} else {
+    GraphObject = window.GraphObject;
+}
+
 class Edge extends GraphObject {
     /**
      * The identifier of the node this edge is directed to.
@@ -72,4 +79,10 @@ class Edge extends GraphObject {
     isNumber(value) {
         return Number.isFinite(Number(value));
     }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Edge;
+} else if (typeof window !== 'undefined') {
+    window.Edge = Edge;
 }
