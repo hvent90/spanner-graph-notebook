@@ -1,4 +1,4 @@
-const Edge = require('../../src/models/edge');
+const Edge = require('../../../src/models/edge');
 
 describe('Edge', () => {
     let edge: typeof Edge;

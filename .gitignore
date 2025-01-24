@@ -150,4 +150,4 @@ Dockerfile
 /frontend/node_modules
 /frontend/package-lock.json
 /frontend/tests/coverage/
-/frontend/tests/__image_snapshots__
+/frontend/tests/visual/__image_snapshots__

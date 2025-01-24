@@ -1,10 +1,10 @@
-const GraphConfig = require('../src/spanner-config.js');
+const GraphConfig = require('../../src/spanner-config.js');
 // @ts-ignore
-const GraphNode = require('../src/models/node.js');
+const GraphNode = require('../../src/models/node.js');
 // @ts-ignore
-const Edge = require('../src/models/edge.js');
+const Edge = require('../../src/models/edge.js');
 // @ts-ignore
-const Schema = require('../src/models/schema.js');
+const Schema = require('../../src/models/schema.js');
 
 describe('GraphConfig', () => {
     // @ts-ignore
@@ -102,8 +102,11 @@ describe('GraphConfig', () => {
         it('should accept custom color palette and scheme', () => {
             const customPalette = ['#FF0000', '#00FF00', '#0000FF'];
             const config = new GraphConfig({
+                // @ts-ignore
                 nodesData: mockNodesData,
+                // @ts-ignore
                 edgesData: mockEdgesData,
+                // @ts-ignore
                 schemaData: mockSchemaData,
                 colorPalette: customPalette,
                 colorScheme: GraphConfig.ColorScheme.LABEL

@@ -1,4 +1,4 @@
-const GraphNode = require('../../src/models/node.js');
+const GraphNode = require('../../../src/models/node.js');
 
 describe('Node', () => {
     let graphNode: typeof GraphNode;
