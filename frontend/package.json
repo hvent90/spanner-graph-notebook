@@ -2,8 +2,10 @@
   "name": "spanner-graph",
   "version": "1.0.0",
   "scripts": {
-    "test": "jest",
-    "test-serve": "node tests/serve-content.js"
+    "test": "npm run test:unit",
+    "test:unit": "TEST_TYPE=unit jest",
+    "test:visual": "TEST_TYPE=visual jest ",
+    "test:serve-content": "node tests/serve-content.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,4 +1,4 @@
-const Schema = require('../../src/models/schema.js');
+const Schema = require('../../../src/models/schema.js');
 
 describe('Schema', () => {
     const mockPropertyDeclarations = [

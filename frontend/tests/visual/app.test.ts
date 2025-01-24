@@ -2,7 +2,7 @@
  * @jest-environment puppeteer
  */
 
-const {ServeFrontend, MockBackend} = require('./serve-content');
+const {ServeFrontend, MockBackend} = require('../serve-content');
 
 describe('Hello World', () => {
     it('should run a test', () => {

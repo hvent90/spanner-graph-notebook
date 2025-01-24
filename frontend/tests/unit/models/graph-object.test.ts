@@ -1,4 +1,4 @@
-const GraphObject = require('../../src/models/graph-object.js');
+const GraphObject = require('../../../src/models/graph-object.js');
 
 describe('Graph Object', () => {
     it('Should create a Graph Object instance', () => {
