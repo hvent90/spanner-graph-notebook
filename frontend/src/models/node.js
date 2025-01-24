@@ -13,6 +13,13 @@
  * limitations under the License.
  */
 
+let GraphObject;
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    GraphObject = require('./graph-object');
+} else {
+    GraphObject = window.GraphObject;
+}
+
 /**
  * Represents a graph node.
  * @class
@@ -93,4 +100,10 @@ class Node extends GraphObject {
             }
         }
     }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Node;
+} else if (typeof window !== 'undefined') {
+    window.Node = Node;
 }
