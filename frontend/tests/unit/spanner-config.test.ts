@@ -1,3 +1,4 @@
+// @ts-ignore
 const GraphConfig = require('../../src/spanner-config.js');
 // @ts-ignore
 const GraphNode = require('../../src/models/node.js');
