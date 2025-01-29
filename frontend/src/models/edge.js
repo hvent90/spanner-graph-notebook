@@ -14,9 +14,7 @@
  */
 
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    GraphObject = require('./graph-object');
-} else {
-    GraphObject = window.GraphObject;
+    require('./graph-object');
 }
 
 class Edge extends GraphObject {

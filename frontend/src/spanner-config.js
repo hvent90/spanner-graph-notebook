@@ -13,15 +13,10 @@
  * limitations under the License.
  */
 
-let Node, Edge, Schema;
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    Node = require('./models/node');
-    Edge = require('./models/edge');
-    Schema = require('./models/schema');
-} else {
-    Node = window.Node;
-    Edge = window.Edge;
-    Schema = window.Schema;
+    require('./models/node');
+    require('./models/edge');
+    require('./models/schema');
 }
 
 class GraphConfig {

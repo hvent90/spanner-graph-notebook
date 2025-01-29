@@ -2,7 +2,7 @@
  * @jest-environment puppeteer
  */
 
-const {ServeFrontend, MockBackend} = require('../serve-content');
+const {ServeFrontend} = require('../serve-content.js')
 
 describe('Hello World', () => {
     it('should run a test', () => {
@@ -11,27 +11,11 @@ describe('Hello World', () => {
 });
 
 describe('Main Application Flow', () => {
-    let frontend: typeof ServeFrontend;
-    let backend: typeof MockBackend;
-
-    beforeAll(async () => {
-        frontend = new ServeFrontend(8080);
-        frontend.start();
-
-        backend = new MockBackend();
-        backend.start();
-    });
-
     beforeEach(async () => {
-        await page.goto('http://localhost:8080/test.html');
+        await page.goto(`http://localhost:${ServeFrontend.port}/static/test.html`);
 
         // let the graph settle
         await new Promise(resolve => setTimeout(resolve, 2000));
-    })
-
-    afterAll(async () => {
-        await frontend.stop();
-        await backend.stop();
     });
 
     it('should show the graph', async () => {

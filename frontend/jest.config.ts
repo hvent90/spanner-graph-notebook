@@ -145,9 +145,11 @@ const config: Config = {
   // setupFiles: [],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
+  // @ts-ignore
   setupFilesAfterEnv: [
-    './tests/jest.setup.ts'
-  ],
+    './tests/jest.setup.ts',
+    process.env.TEST_TYPE === 'visual' && './tests/visual/jest-visual.setup.ts'
+  ].filter(Boolean),
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
   // slowTestThreshold: 5,
@@ -205,5 +207,12 @@ const config: Config = {
   // Whether to use watchman for file crawling
   // watchman: true,
 };
+
+const {ServeFrontend, MockBackend} = require('./tests/serve-content.js');
+if (process.env.TEST_TYPE === 'visual') {
+  // Serve frontend content for visual snapshots and to make the dom available
+  ServeFrontend.getInstance();
+  MockBackend.getInstance();
+}
 
 export default config;

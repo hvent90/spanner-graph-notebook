@@ -13,17 +13,10 @@
  * limitations under the License.
  */
 
-let GraphConfig;
-let Node;
-let Edge;
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    GraphConfig = require('./spanner-config');
-    Node = require('./models/node');
-    Edge = require('./models/edge');
-} else {
-    GraphConfig = window.GraphConfig;
-    Node = window.Node;
-    Edge = window.Edge;
+    require('./spanner-config');
+    require('./models/node');
+    require('./models/edge');
 }
 
 /**

@@ -1,5 +1,4 @@
-const {configureToMatchImageSnapshot} = require('jest-image-snapshot');
-
+// Hide console messages upon improper instantiations during tests
 if (process.env.SUPRESS_LOGS) {
     global.console = {
         ...global.console,
@@ -8,8 +7,3 @@ if (process.env.SUPRESS_LOGS) {
         error: jest.fn(),
     };
 }
-
-const toMatchImageSnapshot = configureToMatchImageSnapshot({
-    runInProcess: true,
-});
-expect.extend({toMatchImageSnapshot});

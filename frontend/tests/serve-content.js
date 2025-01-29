@@ -3,16 +3,32 @@ const httpServer = require('http-server');
 const fs = require('fs');
 const path = require('path');
 
-class ServeFrontend {
-    port = 8080;
 
-    constructor(port = 8080) {
-        this.port = port;
+class ServeFrontend {
+    static _instance = null;
+    static port = 8123;
+
+    static getInstance() {
+        if (!ServeFrontend._instance) {
+            ServeFrontend._instance = new ServeFrontend();
+        }
+
+        return ServeFrontend._instance;
+    }
+
+    constructor() {
+        if (ServeFrontend._instance) {
+            return ServeFrontend._instance;
+        }
 
         // Add process exit handlers
         process.on('exit', this._cleanup.bind(this));
         process.on('SIGINT', this._cleanup.bind(this));
         process.on('SIGTERM', this._cleanup.bind(this));
+        
+        ServeFrontend._instance = this;
+
+        this._start();
     }
 
     _cleanup() {
@@ -22,16 +38,16 @@ class ServeFrontend {
         }
     }
 
-    start() {
+    _start() {
         return new Promise((resolve) => {
             this.server = httpServer.createServer({
-                port: this.port,
+                port: ServeFrontend.port,
                 cache: -1,  // Disable caching
                 root: './'  // Serve from root directory
             });
 
-            this.server.listen(8080, () => {
-                console.log('Frontend content is served at http://localhost:8080/static/test.html');
+            this.server.listen(ServeFrontend.port, () => {
+                console.log(`Frontend content is served at http://localhost:${ServeFrontend.port}/static/test.html`);
             });
         });
     }
@@ -42,11 +58,22 @@ class ServeFrontend {
 }
 
 class MockBackend {
-    port = 8195;
+    static _instance = null;
+    static port = 8195;
 
-    constructor(port = 8195) {
+    static getInstance() {
+        if (!MockBackend._instance) {
+            MockBackend._instance = new MockBackend();
+        }
+
+        return MockBackend._instance;
+    }
+
+    constructor() {
+        if (MockBackend._instance) {
+            return MockBackend._instance;
+        }
         this.server = null;
-        this.port = port;
 
         // Load mock data
         const mockDataPath = path.join(__dirname, './mock-data.json');
@@ -56,6 +83,10 @@ class MockBackend {
         process.on('exit', this._cleanup.bind(this));
         process.on('SIGINT', this._cleanup.bind(this));
         process.on('SIGTERM', this._cleanup.bind(this));
+
+        MockBackend._instance = this;
+
+        this._start();
     }
 
     _cleanup() {
@@ -105,11 +136,11 @@ class MockBackend {
         });
     }
 
-    start() {
+    _start() {
         return new Promise((resolve) => {
             this.server = http.createServer(this._handleRequest.bind(this));
-            this.server.listen(this.port, () => {
-                console.log(`Mock Spanner server running at http://localhost:${this.port}`);
+            this.server.listen(MockBackend.port, () => {
+                console.log(`Mock Spanner server running at http://localhost:${MockBackend.port}`);
                 resolve();
             });
         });
@@ -129,16 +160,15 @@ class MockBackend {
     }
 }
 
-// Export the MockServer class
-module.exports = {ServeFrontend, MockBackend};
+module.exports = {
+    ServeFrontend,
+    MockBackend
+};
 
 // Check if this file is being run directly
 if (require.main === module) {
-    const frontend = new ServeFrontend(8080);
-    frontend.start();
-
-    const backend = new MockBackend();
-    backend.start();
+    const frontend = ServeFrontend.getInstance();
+    const backend = MockBackend.getInstance();
 
     // Handle process termination
     process.on('SIGINT', async () => {
