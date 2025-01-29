@@ -14,9 +14,9 @@
  */
 
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    require('./spanner-config');
-    require('./models/node');
-    require('./models/edge');
+    GraphConfig = require('./spanner-config');
+    Node = require('./models/node');
+    Edge = require('./models/edge');
 }
 
 /**
