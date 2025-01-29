@@ -2,8 +2,8 @@
  * @jest-environment puppeteer
  */
 
-const GraphConfig = require('../../src/spanner-config');
-const GraphStore = require('../../src/spanner-store');
+const GraphConfig = require('../../../src/spanner-config');
+const GraphStore = require('../../../src/spanner-store');
 
 describe('SpannerMenu', () => {
     beforeEach(async () => {
