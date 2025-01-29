@@ -14,9 +14,9 @@
  */
 
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    require('./models/node');
-    require('./models/edge');
-    require('./models/schema');
+    Node = require('./models/node');
+    Edge = require('./models/edge');
+    Schema = require('./models/schema');
 }
 
 class GraphConfig {
