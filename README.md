@@ -175,7 +175,8 @@ cd spanner_graphs && python -m unittest discover -s tests -p "*_test.py"
 
 For frontend testing:
 ```shell
-cd templates/spanner-graph
+cd frontend
 npm install
-npm test
+npm test:unit
+npm test:visual
 ```
