@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+// @ts-ignore
 const Edge = require('../../../src/models/edge');
 
 describe('Edge', () => {

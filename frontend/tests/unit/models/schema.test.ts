@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+// @ts-ignore
 const Schema = require('../../../src/models/schema.js');
 
 describe('Schema', () => {
