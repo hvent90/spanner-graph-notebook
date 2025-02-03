@@ -177,6 +177,6 @@ For frontend testing:
 ```shell
 cd frontend
 npm install
-npm test:unit
-npm test:visual
+npm run test:unit
+npm run test:visual
 ```
