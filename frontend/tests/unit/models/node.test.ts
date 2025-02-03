@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+// @ts-ignore
 const GraphNode = require('../../../src/models/node.js');
 
 describe('Node', () => {

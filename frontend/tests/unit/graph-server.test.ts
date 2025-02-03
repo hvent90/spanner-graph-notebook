@@ -16,6 +16,7 @@
 import path from "path";
 import fs from "fs";
 
+// @ts-ignore
 const GraphServer = require('../../src/graph-server');
 
 describe('GraphServer', () => {
