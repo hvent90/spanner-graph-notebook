@@ -27,10 +27,10 @@ describe('Node', () => {
             neighborhood: 2,
             color: '#ffffff',
             properties: {
-                name: 'Test Node',
+                name: 'Node Name',
                 type: 'example'
             },
-            key_property_names: ['name']
+            key_property_names: ['name', 'type']
         });
     });
 
@@ -52,7 +52,7 @@ describe('Node', () => {
     });
 
     it('should parse identifiers from properties using key_property_names', () => {
-        expect(graphNode.identifiers).toEqual(['Test Node']);
+        expect(graphNode.identifiers).toEqual(['Node Name', 'example']);
     });
 
 });
