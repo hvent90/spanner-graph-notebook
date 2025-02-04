@@ -80,6 +80,4 @@ class Edge extends GraphObject {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = Edge;
-} else if (typeof window !== 'undefined') {
-    window.Edge = Edge;
 }

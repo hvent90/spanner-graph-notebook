@@ -101,6 +101,4 @@ class Node extends GraphObject {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = Node;
-} else if (typeof window !== 'undefined') {
-    window.Node = Node;
 }

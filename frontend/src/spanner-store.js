@@ -435,6 +435,4 @@ class GraphStore {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = GraphStore;
-} else if (typeof window !== 'undefined') {
-    window.GraphStore = GraphStore;
 }
