@@ -42,13 +42,16 @@ describe('Node', () => {
         expect(graphNode.instantiated).toBe(true);
     });
 
-    it('should throw error when id is not a number', () => {
-        const invalidNode = new GraphNode({
+    it('should throw error when id is invalid', () => {
+        expect((new GraphNode({
             label: 'Invalid Node',
             id: 'not-a-number'
-        });
-        
-        expect(invalidNode.instantiationErrorReason).toBe("Node does not have an ID");
+        })).instantiationErrorReason).toBe("Node does not have an ID");
+
+        expect((new GraphNode({
+            label: 'Invalid Node',
+            // missing ID
+        })).instantiationErrorReason).toBe("Node does not have an ID");
     });
 
     it('should parse identifiers from properties using key_property_names', () => {
