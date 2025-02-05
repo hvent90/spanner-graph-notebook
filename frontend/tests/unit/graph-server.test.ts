@@ -27,7 +27,7 @@ describe('GraphServer', () => {
     beforeEach(() => {
         mockFetch.mockClear();
         graphServer = new GraphServer(
-            'http://test-url:8000',
+            8000,
             'test-project',
             'test-instance',
             'test-database',
@@ -36,7 +36,17 @@ describe('GraphServer', () => {
     });
 
     describe('constructor', () => {
-        it('should initialize with default values when no URL is provided', () => {
+        it('should initialize with the default variables', () => {
+           expect(graphServer.port).toBe(8000);
+           expect(graphServer.project).toBe('test-project');
+           expect(graphServer.instance).toBe('test-instance');
+           expect(graphServer.database).toBe('test-database');
+           expect(graphServer.mock).toBe(false);
+        });
+
+        it('should fail to initialize when no port is provided', () => {
+            console.error = jest.fn();
+
             const defaultServer = new GraphServer(
                 null,
                 'test-project',
@@ -44,11 +54,20 @@ describe('GraphServer', () => {
                 'test-database',
                 false
             );
-            expect(defaultServer.url).toBe('http://localhost:8195');
+
+            expect(console.error).toHaveBeenCalledWith('Graph Server was not given a numerical port', {port: null});
         });
 
-        it('should use custom URL when provided', () => {
-            expect(graphServer.url).toBe('http://test-url:8000');
+        it('should cast a string port to a number', () => {
+            const server = new GraphServer(
+                '1234',
+                'test-project',
+                'test-instance',
+                'test-database',
+                false
+            );
+
+            expect(server.port).toBe(1234);
         });
 
         it('should set project, instance, and database values', () => {
@@ -62,7 +81,18 @@ describe('GraphServer', () => {
     describe('buildRoute', () => {
         it('should correctly build route with endpoint', () => {
             const route = graphServer.buildRoute('/test-endpoint');
-            expect(route).toBe('http://test-url:8000/test-endpoint');
+            expect(route).toBe('http://localhost:8000/test-endpoint');
+        });
+
+        it('should build a route to accomodate Vertex AI', () => {
+            const originalLocation = window.location;
+            // @ts-ignore
+            delete window.location;
+            window.location = { ...originalLocation, hostname: 'vertex-ai-workbench' };
+            const route = graphServer.buildRoute('/test-endpoint');
+            expect(route).toBe('/proxy/8000/test-endpoint');
+
+            window.location = originalLocation;
         });
     });
 
@@ -84,7 +114,7 @@ describe('GraphServer', () => {
             await graphServer.query(queryString);
 
             expect(mockFetch).toHaveBeenCalledWith(
-                'http://test-url:8000/post_query',
+                'http://localhost:8000/post_query',
                 {
                     method: 'POST',
                     body: JSON.stringify({
@@ -167,7 +197,7 @@ describe('GraphServer', () => {
 
         it('should make GET request to ping endpoint', async () => {
             await graphServer.ping();
-            expect(mockFetch).toHaveBeenCalledWith('http://test-url:8000/get_ping');
+            expect(mockFetch).toHaveBeenCalledWith('http://localhost:8000/get_ping');
         });
     });
 });
