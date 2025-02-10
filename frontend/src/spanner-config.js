@@ -185,11 +185,11 @@ class GraphConfig {
         const labels = new Set();
 
         for (const node of this.nodes) {
-            labels.add(node.label);
+            labels.add(node.getDisplayName());
         }
 
         for (const schemaNode of this.schemaNodes) {
-            labels.add(schemaNode.label);
+            labels.add(schemaNode.getDisplayName());
         }
 
         for (const label of labels) {
@@ -227,13 +227,11 @@ class GraphConfig {
              * @returns {NodeData}
              */
             (nodeTable, i) => {
-                const name = this.schema.getDisplayName(nodeTable)
-
                 /**
                  * @type {NodeData}
                  */
                 return {
-                    label: name,
+                    labels: nodeTable.labelNames,
                     properties: this.schema.getPropertiesOfTable(nodeTable),
                     color: 'rgb(0, 0, 100)', // this isn't used
                     key_property_names: ['id'],
@@ -250,7 +248,6 @@ class GraphConfig {
              */
             (edgeTable, i) => {
                 const connectedNodes = this.schema.getNodesOfEdges(edgeTable);
-                const name = this.schema.getDisplayName(edgeTable)
 
                 /**
                  * @type {EdgeData}

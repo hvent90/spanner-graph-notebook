@@ -265,6 +265,51 @@ class GraphStore {
         return this.getEdges().filter(edge => edge.source === node || edge.target === node);
     }
 
+    /**
+     * Gets all possible edge types for a node based on its labels and the schema
+     * @param {Node} node - The node to get edge types for
+     * @returns {Array<{label: string, direction: 'INCOMING' | 'OUTGOING'}>} Array of edge types with their directions
+     */
+    getEdgeTypesOfNode(node) {
+        if (!node || !(node instanceof Node)) {
+            return [];
+        }
+
+        // Find matching node tables for this node's labels
+        const matchingNodeTables = this.config.schema.rawSchema.nodeTables.filter(nodeTable =>
+            node.labels.some(label => nodeTable.labelNames.includes(label))
+        );
+
+        const edgeTypes = new Set();
+
+        // For each matching node table, find incoming and outgoing edges
+        matchingNodeTables.forEach(nodeTable => {
+            this.config.schema.rawSchema.edgeTables.forEach(edgeTable => {
+                // Check for outgoing edges
+                if (edgeTable.sourceNodeTable.nodeTableName === nodeTable.name) {
+                    edgeTable.labelNames.forEach(label => {
+                        edgeTypes.add({
+                            label,
+                            direction: 'OUTGOING'
+                        });
+                    });
+                }
+
+                // Check for incoming edges
+                if (edgeTable.destinationNodeTable.nodeTableName === nodeTable.name) {
+                    edgeTable.labelNames.forEach(label => {
+                        edgeTypes.add({
+                            label,
+                            direction: 'INCOMING'
+                        });
+                    });
+                }
+            });
+        });
+
+        return Array.from(edgeTypes);
+    }
+
     getNodeById(id) {
         return this.getNodes().find(node => node.id === id);
     }
@@ -349,16 +394,17 @@ class GraphStore {
      * @returns {string} The color for the node based on its label.
      */
     getColorForNodeByLabel(node) {
-        if (!node || !node.label) {
-            console.error('Node must have a label', node);
+        const defaultColor = 'rgb(100, 100, 100)';
+        if (!node || !(node instanceof Node)) {
+            return defaultColor;
         }
 
-        const nodeColor = this.config.nodeColors[node.label];
+        const nodeColor = this.config.nodeColors[node.getDisplayName()];
         if (nodeColor) {
             return nodeColor;
         }
 
-        return 'rgb(100, 100, 100)';
+        return defaultColor;
     }
 
     /**
