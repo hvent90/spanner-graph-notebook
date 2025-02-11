@@ -28,7 +28,8 @@ describe('GraphConfig', () => {
     // @ts-ignore
     let mockNodesData: Array<{
         id: number;
-        label: string;
+        uid: number | string;
+        labels: string[];
         properties: Record<string, any>;
         key_property_names: string[];
     }>;
@@ -54,12 +55,14 @@ describe('GraphConfig', () => {
         mockNodesData = [
             {
                 id: 1,
+                uid: 1,
                 labels: ['Person'],
                 properties: {name: 'John', age: 30},
                 key_property_names: ['id']
             },
             {
                 id: 2,
+                uid: 2,
                 labels: ['Company'],
                 properties: {name: 'Google', location: 'CA'},
                 key_property_names: ['id']
@@ -128,7 +131,7 @@ describe('GraphConfig', () => {
                 schemaData: mockSchemaData
             });
 
-            expect(config.nodes.length).toBe(2);
+            expect(Object.keys(config.nodes).length).toBe(2);
             expect(config.edges.length).toBe(1);
             expect(config.colorScheme).toBe(GraphConfig.ColorScheme.NEIGHBORHOOD);
             expect(config.viewMode).toBe(GraphConfig.ViewModes.DEFAULT);
@@ -163,10 +166,13 @@ describe('GraphConfig', () => {
                 schemaData: mockSchemaData
             });
 
-            expect(config.nodes.length).toBe(2);
-            expect(config.nodes[0]).toBeInstanceOf(GraphNode);
-            expect(config.nodes[0].labels).toEqual(['Person']);
-            expect(config.nodes[1].labels).toEqual(['Company']);
+            const uids = Object.keys(config.nodes);
+            expect(uids).toBeInstanceOf(Array);
+            expect(uids.length).toBe(2);
+            expect(typeof uids[0]).toEqual("string");
+            expect(config.nodes[uids[0]]).toBeInstanceOf(GraphNode);
+            expect(config.nodes[uids[0]].labels).toEqual(['Person']);
+            expect(config.nodes[uids[1]].labels).toEqual(['Company']);
         });
     });
 
@@ -253,26 +259,26 @@ describe('GraphConfig', () => {
             // Schema nodes have labels: A, B, C, D, E, F
             const complexNodesData = [
                 {
-                    id: 1,
-                    label: 'A',
+                    uid: '1',
+                    labels: ['A'],
                     properties: {name: 'Node A', value: 10},
                     key_property_names: ['id']
                 },
                 {
-                    id: 2,
-                    label: 'C',
+                    uid: '2',
+                    labels: ['C'],
                     properties: {name: 'Node C', value: 30},
                     key_property_names: ['id']
                 },
                 {
-                    id: 3,
-                    label: 'E',
+                    uid: '3',
+                    labels: ['E'],
                     properties: {name: 'Node E', value: 50},
                     key_property_names: ['id']
                 },
                 {
-                    id: 4,
-                    label: 'F',
+                    uid: '4',
+                    labels: ['F'],
                     properties: {name: 'Node F', value: 60},
                     key_property_names: ['id']
                 }
@@ -386,13 +392,15 @@ describe('GraphConfig', () => {
                 ...mockNodesData,
                 {
                     id: 3,
-                    label: 'Person',
+                    uid: 3,
+                    labels: ['Person'],
                     properties: {name: 'Jane', age: 25},
                     key_property_names: ['id']
                 },
                 {
                     id: 4,
-                    label: 'Product',
+                    uid: 4,
+                    labels: ['Product'],
                     properties: {name: 'Laptop', price: 999.99},
                     key_property_names: ['id']
                 }
@@ -503,7 +511,12 @@ describe('GraphConfig', () => {
             });
 
             expect(config.schema).toBeInstanceOf(Schema);
-            expect(config.schemaNodes.length).toBe(2);
+
+            const uids = Object.keys(config.schemaNodes);
+            expect(uids).toBeInstanceOf(Array);
+            expect(uids.length).toBe(2);
+            expect(typeof uids[0]).toEqual("string");
+            expect(config.schemaNodes[uids[0]]).toBeInstanceOf(GraphNode);
             expect(config.schemaEdges.length).toBe(1);
         });
 
@@ -517,7 +530,7 @@ describe('GraphConfig', () => {
             });
 
             expect(config.schema).toBeNull();
-            expect(config.schemaNodes.length).toBe(0);
+            expect(Object.keys(config.schemaNodes).length).toBe(0);
             expect(config.schemaEdges.length).toBe(0);
         });
     });

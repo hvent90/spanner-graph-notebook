@@ -19,6 +19,8 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
     Schema = require('./models/schema');
 }
 
+/** @typedef {Record<NodeUID, Node>} NodeMap */
+
 class GraphConfig {
 
     /**
@@ -28,10 +30,10 @@ class GraphConfig {
     schema = null;
 
     /**
-     * The array of node objects to be rendered.
-     * @type {Array<Node>}
+     * A map of nodes where the key is the node's UID and the value is the Node instance.
+     * @type {NodeMap}
      */
-    schemaNodes = [];
+    schemaNodes = {};
 
     /**
      * The array of edge objects to be rendered.
@@ -40,10 +42,10 @@ class GraphConfig {
     schemaEdges = [];
 
     /**
-     * The array of node objects to be rendered.
-     * @type {Array<Node>}
+     * A map of nodes where the key is the node's UID and the value is the Node instance.
+     * @type {NodeMap}
      */
-    nodes = [];
+    nodes = {};
 
     /**
      * The array of edge objects to be rendered.
@@ -184,12 +186,22 @@ class GraphConfig {
 
         const labels = new Set();
 
-        for (const node of this.nodes) {
+        for (const uid of Object.keys(this.nodes)) {
+            const node = this.nodes[uid];
+            if (!node || !(node instanceof Node)) {
+                continue;
+            }
+
             labels.add(node.getDisplayName());
         }
 
-        for (const schemaNode of this.schemaNodes) {
-            labels.add(schemaNode.getDisplayName());
+        for (const uid of Object.keys(this.schemaNodes)) {
+            const node = this.schemaNodes[uid];
+            if (!node || !(node instanceof Node)) {
+                continue;
+            }
+
+            labels.add(node.getDisplayName());
         }
 
         for (const label of labels) {
@@ -230,12 +242,14 @@ class GraphConfig {
                 /**
                  * @type {NodeData}
                  */
+                const id = this.schema.getNodeTableId(nodeTable);
                 return {
                     labels: nodeTable.labelNames,
                     properties: this.schema.getPropertiesOfTable(nodeTable),
                     color: 'rgb(0, 0, 100)', // this isn't used
                     key_property_names: ['id'],
-                    id: this.schema.getNodeTableId(nodeTable)
+                    uid: i,
+                    id
                 };
             }
         );
@@ -253,7 +267,7 @@ class GraphConfig {
                  * @type {EdgeData}
                  */
                 return {
-                    label: name,
+                    labels: edgeTable.labelNames,
                     properties: this.schema.getPropertiesOfTable(edgeTable),
                     color: 'rgb(0, 0, 100)', // this isn't used
                     to: this.schema.getNodeTableId(connectedNodes.to),
@@ -276,8 +290,8 @@ class GraphConfig {
             throw Error('Nodes must be an array');
         }
 
-        /** @type {Node[]} */
-        const nodes = []
+        /** @type {NodeMap} */
+        const nodes = {};
         nodesData.forEach(nodeData => {
             if (!(nodeData instanceof Object)) {
                 console.error('Node data is not an object', nodeData);
@@ -291,7 +305,7 @@ class GraphConfig {
                 return;
             }
             if (node instanceof Node && node.instantiated) {
-                nodes.push(node);
+                nodes[node.uid] = node;
             } else {
                 node.instantiationErrorReason = 'Could not construct an instance of Node';
                 console.error(node.instantiationErrorReason, { nodeData, node });
