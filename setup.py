@@ -25,25 +25,26 @@ def package_files(directory):
     return paths
 
 extra_files_assets = package_files('assets')
-extra_files_templates = package_files('templates')
+extra_files_frontend = package_files('frontend')
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name="spanner-graph-notebook",
-    version="v1.0.7",
+    version="v1.1.1",
     packages=find_packages(),
     install_requires=[
         "networkx", "numpy", "google-cloud-spanner", "ipython",
-        "ipywidgets", "notebook", "requests", "portpicker"
+        "ipywidgets", "notebook", "requests", "portpicker",
+        "pydata-google-auth"
     ],
     include_package_data=True,
     description='Visually query Spanner Graph data in notebooks.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     package_data={
-        "": extra_files_templates + extra_files_assets,
+        "": extra_files_frontend + extra_files_assets,
         "spanner_graphs": [
             "graph_mock_data.csv",
             "graph_mock_schema.json",

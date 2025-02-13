@@ -1,5 +1,5 @@
 <!--
-Copyright 2024 Google LLC
+Copyright 2025 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,9 +29,11 @@ limitations under the License.
         {{ node_content | safe }}
         {{ edge_content | safe }}
         {{ config_content | safe }}
+        {{ menu_content | safe }}
         {{ graph_content | safe }}
         {{ store_content | safe }}
         {{ sidebar_content | safe }}
+        {{ table_content | safe }}
         {{ server_content | safe }}
         {{ app_content | safe }}
 
@@ -72,11 +74,8 @@ limitations under the License.
                 {
                     id: `{{ id }}`,
                     mount: document.querySelector('div.mount-{{ id }}'),
-                    url: `{{ url }}`,
-                    project: `{{ project }}`,
-                    instance: `{{ instance }}`,
-                    database: `{{ database }}`,
-                    mock: `{{ mock }}` === 'True',
+                    port: `{{ port }}`,
+                    params: `{{ params }}`,
                     query: `{{ query }}`,
                 }
             );

@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,44 +14,58 @@
  */
 
 class GraphServer {
-    defaultPort = 8195
-    defaultHost = 'http://localhost'
-    url = `${this.defaultHost}:${this.defaultPort}`
     isFetching = false;
+    port = 8195;
 
     endpoints = {
         getPing: '/get_ping',
         postQuery: '/post_query',
     };
 
+    /**
+     * Contains parameters needed to create the database object; passed to Python when running a query.
+     * @type {string}
+     */
+    params = null;
+
+
     buildRoute(endpoint) {
-        return `${this.url}${endpoint}`;
+        const hostname = window.location.hostname;
+
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // Local Jupyter Notebook environment
+            return `http://localhost:${this.port}${endpoint}`;
+        } else {
+            // Assume Vertex AI Workbench JupyterLab environment (or other JupyterLab proxy setup)
+            return `/proxy/${this.port}${endpoint}`;
+        }
     }
-    
-    constructor(url, project, instance, database, mock) {
-        if (url) {
-            this.url = url;
+
+    constructor(port, params) {
+        let numericalPort = port;
+        if (typeof numericalPort !== 'number') {
+            numericalPort = Number.parseInt(numericalPort);
+
+            if (isNaN(numericalPort)) {
+                console.error('Graph Server was not given a numerical port', {port});
+                return;
+            }
         }
 
-        this.project = project;
-        this.instance = instance;
-        this.database = database;
-        this.mock = mock;
+        this.port = numericalPort;
+        this.params = params
     }
-    
+
     query(queryString) {
         const request = {
             query: queryString,
-            project: this.project,
-            instance: this.instance,
-            database: this.database,
-            mock: this.mock
+            params: this.params
         };
 
         this.isFetching = true;
 
         if (typeof google !== 'undefined') {
-            return google.colab.kernel.invokeFunction('spanner.Query', [], request)
+            return google.colab.kernel.invokeFunction('graph_visualization.Query', [], request)
                 .then(result => result.data['application/json'])
                 .finally(() => this.isFetching = false);
         }
@@ -87,4 +101,8 @@ class GraphServer {
                 console.error('There has been a problem with your fetch operation:', error);
             });
     }
+}
+
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    module.exports = GraphServer;
 }

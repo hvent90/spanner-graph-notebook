@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    Node = require('./models/node');
+    Edge = require('./models/edge');
+    Schema = require('./models/schema');
+}
+
 class GraphConfig {
 
     /**
@@ -50,6 +56,12 @@ class GraphConfig {
      * @type {Array<any>}
      */
     rowsData = [];
+
+    /**
+     * rowsData grouped by fields that were specified in the user's query.
+     * @type {Object}
+     */
+    queryResult = {};
 
     /**
      * The currently focused GraphObject. This is usually the
@@ -111,6 +123,26 @@ class GraphConfig {
         LABEL: Symbol('label')
     });
 
+    static ViewModes = Object.freeze({
+        DEFAULT: Symbol('DEFAULT'),
+        SCHEMA: Symbol('SCHEMA'),
+        TABLE: Symbol('TABLE'),
+    });
+
+    static LayoutModes = Object.freeze({
+        FORCE: Symbol('FORCE'),
+        TOP_DOWN: Symbol('TOP_DOWN'),
+        LEFT_RIGHT: Symbol('LEFT_RIGHT'),
+        RADIAL_IN: Symbol('RADIAL_IN'),
+        RADIAL_OUT: Symbol('RADIAL_OUT'),
+    })
+
+    viewMode = GraphConfig.ViewModes.DEFAULT;
+    layoutMode = GraphConfig.LayoutModes.FORCE;
+    lastLayoutMode = GraphConfig.LayoutModes.FORCE;
+
+    showLabels = false;
+
     /**
      * Constructs a new GraphConfig instance.
      * @constructor
@@ -120,9 +152,11 @@ class GraphConfig {
      * @param {Array} [config.colorPalette] - An optional array of colors to use as the color palette.
      * @param {GraphConfig.ColorScheme} [config.colorScheme] - Color scheme can be optionally declared.
      * @param {Array} [config.rowsData] - Raw row data from Spanner
+     * @param {Object} [config.queryResult] - key-value pair: [field_name: str]: [...config.rowsData]. This
+     * has the same data as config.rowsData, but it is grouped by a field name written by the user in their query string.
      * @param {RawSchema} config.schemaData - Raw schema data from Spanner
      */
-    constructor({ nodesData, edgesData, colorPalette, colorScheme, rowsData, schemaData}) {
+    constructor({ nodesData, edgesData, colorPalette, colorScheme, rowsData, schemaData, queryResult}) {
         this.nodes = this.parseNodes(nodesData);
         this.edges = this.parseEdges(edgesData);
         this.nodeColors = this.assignColors(this.nodes);
@@ -137,6 +171,7 @@ class GraphConfig {
         }
 
         this.rowsData = rowsData;
+        this.queryResult = queryResult;
     }
 
     /**
@@ -183,6 +218,10 @@ class GraphConfig {
      * @throws {Error} Throws an error if the schema data can not be parsed
      */
     parseSchema(schemaData) {
+        if (!(schemaData instanceof Object)) {
+            return;
+        }
+
         this.schema = new Schema(schemaData);
 
         const nodesData = this.schema.rawSchema.nodeTables.map(
@@ -258,7 +297,7 @@ class GraphConfig {
                 console.error('Unable to instantiate node', node.instantiationErrorReason);
                 return;
             }
-            if (node instanceof Node) {
+            if (node instanceof Node && node.instantiated) {
                 nodes.push(node);
             } else {
                 node.instantiationErrorReason = 'Could not construct an instance of Node';
@@ -299,4 +338,9 @@ class GraphConfig {
 
         return edges;
     }
+}
+
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = GraphConfig;
 }

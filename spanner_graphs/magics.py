@@ -34,6 +34,7 @@ from jinja2 import Template
 
 from spanner_graphs.database import get_database_instance
 from spanner_graphs.graph_server import GraphServer, execute_query
+from spanner_graphs.graph_visualization import generate_visualization_html
 
 singleton_server_thread: Thread = None
 
@@ -61,63 +62,6 @@ def _load_image(path: list[str]) -> str:
         with open(file_path, 'rb') as file:
             return base64.b64decode(file.read()).decode('utf-8')
 
-def _generate_html(query, project: str, instance: str, database: str, mock: bool):
-        # Get the directory of the current file (magics.py)
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-
-        # Go up directories until we find the 'templates' folder
-        search_dir = current_dir
-        while 'templates' not in os.listdir(search_dir):
-            parent = os.path.dirname(search_dir)
-            if parent == search_dir:  # We've reached the root directory after I updated
-                raise FileNotFoundError("Could not find 'templates' directory")
-            search_dir = parent
-
-        # Retrieve the javascript content
-        template_content = _load_file([search_dir, 'templates', 'template-spannergraph.html'])
-        schema_content = _load_file([search_dir, 'templates', 'spanner-graph', 'models', 'schema.js'])
-        graph_object_content = _load_file([search_dir, 'templates', 'spanner-graph', 'models', 'graph-object.js'])
-        node_content = _load_file([search_dir, 'templates', 'spanner-graph', 'models', 'node.js'])
-        edge_content = _load_file([search_dir, 'templates', 'spanner-graph', 'models', 'edge.js'])
-        config_content = _load_file([search_dir, 'templates', 'spanner-graph', 'spanner-config.js'])
-        store_content = _load_file([search_dir, 'templates', 'spanner-graph', 'spanner-store.js'])
-        graph_content = _load_file([search_dir, 'templates', 'spanner-graph', 'visualization', 'spanner-forcegraph.js'])
-        sidebar_content = _load_file([search_dir, 'templates', 'spanner-graph', 'visualization', 'spanner-sidebar.js'])
-        server_content = _load_file([search_dir, 'templates', 'spanner-graph', 'graph-server.js'])
-        app_content = _load_file([search_dir, 'templates', 'spanner-graph', 'app.js'])
-
-        # Retrieve image content
-        graph_background_image = _load_image([search_dir, "templates", "assets", "images", "graph-bg.svg"])
-
-        # Create a Jinja2 template
-        template = Template(template_content)
-
-        # Render the template with the graph data and JavaScript content
-        html_content = template.render(
-            graph_background_image=graph_background_image,
-            template_content=template_content,
-            schema_content=schema_content,
-            graph_object_content=graph_object_content,
-            node_content=node_content,
-            edge_content=edge_content,
-            config_content=config_content,
-            graph_content=graph_content,
-            store_content=store_content,
-            sidebar_content=sidebar_content,
-            server_content=server_content,
-            app_content=app_content,
-            query=query,
-            project=project,
-            instance=instance,
-            database=database,
-            mock=mock,
-            url=GraphServer.url,
-            id=uuid.uuid4().hex # Prevent html/js selector collisions between cells
-        )
-
-        return html_content
-
-
 def _parse_element_display(element_rep: str) -> dict[str, str]:
     """Helper function to parse element display fields into a dict."""
     if not element_rep:
@@ -136,8 +80,13 @@ def is_colab() -> bool:
     except ImportError:
         return False
 
-def receive_query_request(project, instance, database, query, mock):
-    return JSON(execute_query(project, instance, database, query, mock))
+def receive_query_request(query: str, params: str):
+    params_dict = json.loads(params)
+    return JSON(execute_query(project=params_dict["project"],
+                              instance=params_dict["instance"],
+                              database=params_dict["database"],
+                              query=query,
+                              mock=params_dict["mock"]))
 
 @magics_class
 class NetworkVisualizationMagics(Magics):
@@ -152,7 +101,7 @@ class NetworkVisualizationMagics(Magics):
 
         if is_colab():
             from google.colab import output
-            output.register_callback('spanner.Query', receive_query_request)
+            output.register_callback('graph_visualization.Query', receive_query_request)
         else:
             global singleton_server_thread
             alive = singleton_server_thread and singleton_server_thread.is_alive()
@@ -162,12 +111,15 @@ class NetworkVisualizationMagics(Magics):
     def visualize(self):
         """Helper function to create and display the visualization"""
         # Generate the HTML content
-        html_content = _generate_html(
+        html_content = generate_visualization_html(
             query=self.cell,
-            project=self.args.project,
-            instance=self.args.instance,
-            database=self.args.database,
-            mock=self.args.mock)
+            port=GraphServer.port,
+            params=json.dumps({
+                 "project": self.args.project,
+                 "instance": self.args.instance,
+                 "database": self.args.database,
+                 "mock": self.args.mock,
+            }))
         display(HTML(html_content))
 
     @cell_magic
@@ -200,10 +152,8 @@ class NetworkVisualizationMagics(Magics):
                 self.args.instance,
                 self.args.database,
                 mock=self.args.mock)
-
             clear_output(wait=True)
             self.visualize()
-
         except BaseException as e:
             print(f"Error: {e}")
             print("Usage: %%spanner_graph --project PROJECT_ID "

@@ -1,4 +1,19 @@
 /**
+ * Copyright 2024 Google LLC
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
  * Represents the schema of the data.
  * @class
  */
@@ -83,6 +98,10 @@ class Schema {
     constructor(rawSchemaObject) {
         this.rawSchema = rawSchemaObject;
 
+        if (!(rawSchemaObject instanceof Object)) {
+            return;
+        }
+
         if (!this.rawSchema.edgeTables || !Array.isArray(this.rawSchema.edgeTables)) {
             this.rawSchema.edgeTables = [];
         }
@@ -134,6 +153,10 @@ class Schema {
      * @returns {Array<string>}
      */
     getUniqueLabels(tables) {
+        if (!Array.isArray(tables)) {
+            return [];
+        }
+
         /**
          * @type {Array<string>}
          */
@@ -161,6 +184,10 @@ class Schema {
      * @returns {Array<string>}
      */
     getNodeNames() {
+        if (!this.rawSchema || !Array.isArray(this.rawSchema.nodeTables)) {
+            return [];
+        }
+
         return this.getUniqueLabels(this.rawSchema.nodeTables);
     }
 
@@ -168,6 +195,10 @@ class Schema {
      * @returns {Array<string>}
      */
     getEdgeNames() {
+        if (!this.rawSchema || !Array.isArray(this.rawSchema.edgeTables)) {
+            return [];
+        }
+
         return this.getUniqueLabels(this.rawSchema.edgeTables);
     }
 
@@ -342,4 +373,8 @@ class Schema {
     getDisplayName(table) {
         return table.labelNames[0];
     }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Schema;
 }

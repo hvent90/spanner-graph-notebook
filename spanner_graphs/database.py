@@ -24,14 +24,22 @@ import os
 import csv
 
 from google.cloud import spanner
+from google.cloud.spanner_v1 import JsonObject
+from google.api_core.client_options import ClientOptions
 from google.cloud.spanner_v1.types import StructType, TypeCode, Type
+import pydata_google_auth
 
+def _get_default_credentials_with_project():
+    return pydata_google_auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"], use_local_webserver=False)
 
 class SpannerDatabase:
     """The spanner class holding the database connection"""
     def __init__(self, project_id: str, instance_id: str,
                  database_id: str) -> None:
-        self.client = spanner.Client(project=project_id)
+        credentials, _ = _get_default_credentials_with_project()
+        self.client = spanner.Client(
+            project=project_id, credentials=credentials, client_options=ClientOptions(quota_project_id=project_id))
         self.instance = self.client.instance(instance_id)
         self.database = self.instance.database(database_id)
 
@@ -55,7 +63,6 @@ class SpannerDatabase:
         try:
             graph_name = self._extract_graph_name(graph_query)
         except ValueError as e:
-            print(f"Error extracting graph name: {str(e)}")
             return None
 
         with self.database.snapshot() as snapshot:
@@ -73,7 +80,6 @@ class SpannerDatabase:
             if schema_rows:
                 return schema_rows[0][1]
             else:
-                print(f"No schema found for graph: {graph_name}")
                 return None
 
     def execute_query(
@@ -117,7 +123,11 @@ class SpannerDatabase:
 
             for row in rows:
                 for field, value in zip(fields, row):
-                    data[field.name].append(value)
+                    if isinstance(value, JsonObject):
+                        # Handle JSON objects by properly deserializing them back into Python objects
+                        data[field.name].append(json.loads(value.serialize()))
+                    else:
+                        data[field.name].append(value)
 
             return data, fields, rows, self.schema_json
 
