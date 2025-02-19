@@ -20,6 +20,7 @@ class GraphServer {
     endpoints = {
         getPing: '/get_ping',
         postQuery: '/post_query',
+        postNodeExpansion: '/post_node_expansion',
     };
 
     /**
@@ -54,6 +55,58 @@ class GraphServer {
 
         this.port = numericalPort;
         this.params = params
+    }
+
+    /**
+     * @param {Node} node
+     * @param {Edge.Direction} direction
+     * @param {string|undefined} edgeLabel
+     */
+    nodeExpansion(node, direction, edgeLabel) {
+        if (!node.identifiers.length || !node.key_property_names.length) {
+            return Promise.reject(new Error('Node does not have an identifier'));
+        }
+
+        if (!node.uid) {
+            return Promise.reject(new Error('Node does not have a UID'));
+        }
+
+        const {project, instance, database, graph} = JSON.parse(this.params);
+
+        const request = {
+            project, instance, database, graph,
+            uid: node.uid,
+            node_key_property_name: node.key_property_names[0],
+            node_key_property_value: node.identifiers[0],
+            direction
+        };
+
+        if (typeof edgeLabel == 'string' && edgeLabel.length) {
+            request.edge_label = edgeLabel;
+        }
+
+        this.isFetching = true;
+
+        if (typeof google !== 'undefined') {
+            return google.colab.kernel.invokeFunction('spanner.NodeExpansion', [], request)
+                .then(result => result.data['application/json'])
+                .finally(() => this.isFetching = false);
+        }
+
+        return fetch(this.buildRoute(this.endpoints.postNodeExpansion), {
+            method: 'POST',
+            body: JSON.stringify(request)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // Assuming JSON response
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            })
+            .finally(() => this.isFetching = false);
     }
 
     query(queryString) {

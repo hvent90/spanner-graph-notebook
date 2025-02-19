@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 Google LLC
+ * Copyright 2025 Google LLC
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -113,15 +113,9 @@ class SpannerApp {
                     query_result
                 } = response;
 
-                const fixedEdges = edges.map(edge => ({
-                    ...edge,
-                    to: edge.to instanceof Number ? edge.to : edge.target,
-                    from: edge.from instanceof Number ? edge.from : edge.source
-                }));
-
                 const graphConfig = new GraphConfig({
                     nodesData: nodes,
-                    edgesData: fixedEdges,
+                    edgesData: edges,
                     colorScheme: GraphConfig.ColorScheme.LABEL,
                     rowsData: rows,
                     schemaData: schema,
@@ -157,6 +151,18 @@ class SpannerApp {
                             this.componentMounts.sidebar.classList.remove('hidden');
                             this.componentMounts.table.classList.add('hidden');
                         }
+                    });
+
+                this.store.addEventListener(GraphStore.EventTypes.NODE_EXPANSION_REQUEST,
+                    (node, direction, edgeLabel, config) => {
+                        this.server.nodeExpansion(node, direction, edgeLabel)
+                            .then(response => {
+                                if (!response) {
+                                    return;
+                                }
+                                
+                                this.store.appendGraphData(response.response.nodes, response.response.edges);
+                            });
                     });
 
                 if (!nodes.length) {
@@ -268,6 +274,59 @@ class SpannerApp {
                   100% {
                     transform: rotate(360deg);
                   }
+                }
+                
+                .graph-context-menu {
+                    position: fixed;
+                    background: white;
+                    border-radius: 4px;
+                    padding: 0;
+                    min-width: 160px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    font-family: 'Google Sans', Roboto, Arial, sans-serif;
+                    font-size: 14px;
+                    z-index: 1000;
+                }
+        
+                .context-menu-item {
+                    padding: 12px;
+                    margin-right: 0;
+                    cursor: pointer;
+                    color: #3c4043;
+                    display: flex;
+                    align-items: center;
+                }
+                
+                .context-menu-item svg {
+                    margin-right: 5px;
+                }
+        
+                .context-menu-item:hover {
+                    background-color: #f1f3f4;
+                }
+        
+                .has-submenu {
+                    position: relative;
+                }
+        
+                .submenu-arrow {
+                    margin-left: 16px;
+                    color: #5f6368;
+                }
+        
+                .submenu {
+                    position: absolute;
+                    left: 100%;
+                    top: -4px;
+                    background: white;
+                    border-radius: 4px;
+                    min-width: 160px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    display: none;
+                }
+        
+                .has-submenu:hover .submenu {
+                    display: block;
                 }
             </style>
             <div class="container">
