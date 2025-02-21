@@ -353,6 +353,7 @@ class GraphConfig {
     /**
      * @param {Array<NodeData>} nodesData
      * @param {Array<EdgeData>} edgesData
+     * @returns {{newNodes: NodeMap, newEdges: EdgeMap}} Object containing maps of newly added nodes and edges
      */
     appendGraphData(nodesData, edgesData) {
         const newNodes = this.parseNodes(nodesData);
@@ -371,6 +372,8 @@ class GraphConfig {
         }
 
         this.nodeColors = this.assignColors(this.nodes);
+
+        return {newNodes, newEdges};
     }
 }
 
