@@ -493,6 +493,14 @@ LIMIT 50"></textarea>
             const query = document.getElementById('query').value;
             const mock = document.getElementById('mock').checked;
 
+            // Save configuration to localStorage
+            localStorage.setItem('spanner-graph-config', JSON.stringify({
+                project,
+                instance,
+                database,
+                query
+            }));
+
             // Clear previous instance if it exists
             if (window.app) {
                 window.app.tearDown();
@@ -512,6 +520,20 @@ LIMIT 50"></textarea>
                 mount: mount,
                 query: query
             });
+        }
+
+        // Load saved configuration from localStorage
+        function loadSavedConfig() {
+            const savedConfig = localStorage.getItem('spanner-graph-config');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                document.getElementById('project').value = config.project || 'my-project';
+                document.getElementById('instance').value = config.instance || 'my-instance';
+                document.getElementById('database').value = config.database || 'my-database';
+                document.getElementById('query').value = config.query || '';
+            }
+            // Always ensure mock is checked on initial load
+            document.getElementById('mock').checked = true;
         }
 
         function toggleCommandPalette() {
@@ -550,6 +572,7 @@ LIMIT 50"></textarea>
             if (window && typeof window.onCustomEvent === 'function') {
                 window.onCustomEvent('page ready');
             }
+            loadSavedConfig();
             initializeApp();
         });
     </script>
