@@ -371,7 +371,7 @@ class GraphConfig {
             }
         }
 
-        this.nodeColors = this.assignColors(this.nodes);
+        this.assignColors();
 
         return {newNodes, newEdges};
     }

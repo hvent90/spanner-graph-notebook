@@ -102,6 +102,7 @@ class GraphServer {
         const {project, instance, database, graph} = JSON.parse(this.params);
 
         const request = {
+            project, instance, database, graph,
             uid: node.uid,
             node_key_property_name: node.key_property_names[0],
             node_key_property_value: node.identifiers[0],
