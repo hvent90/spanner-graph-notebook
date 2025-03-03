@@ -604,9 +604,9 @@ class SidebarConstructor {
                 .expand-button {
                     display: flex;
                     align-items: center;
-                    padding: 6px 6px;
-                    margin: 4px 0;
-                    border: 1px solid #DADCE0;
+                    padding: 8px 10px;
+                    margin: 2px 0;
+                    border: none;
                     border-radius: 4px;
                     background: none;
                     cursor: pointer;
@@ -617,8 +617,14 @@ class SidebarConstructor {
                     position: relative;
                     overflow: hidden;
                 }
+                .expand-button-general {
+                    font-weight: 500;
+                }
                 .expand-button:hover:not(.loading) {
-                    background-color: #F8F9FA;
+                    background-color: #F1F3F4;
+                }
+                .expand-button-general:hover:not(.loading) {
+                    background-color: #EBEEF0;
                 }
                 .expand-button.loading {
                     background-color: #F8F9FA;
@@ -635,6 +641,16 @@ class SidebarConstructor {
                 .expand-button-text {
                     flex-grow: 1;
                     text-align: left;
+                }
+                .expand-button-arrow {
+                    opacity: 0.6;
+                    transition: opacity 0.2s;
+                }
+                .expand-button:hover .expand-button-arrow {
+                    opacity: 1;
+                }
+                .expand-button.loading .expand-button-arrow {
+                    opacity: 0;
                 }
                 .expand-button::after {
                     content: '';
@@ -658,12 +674,14 @@ class SidebarConstructor {
                     transition: opacity 0.2s;
                 }
                 @keyframes loading-animation {
-                    0% {
-                        left: -100%;
-                    }
-                    100% {
-                        left: 100%;
-                    }
+                    0% { left: -100%; }
+                    100% { left: 100%; }
+                }
+                
+                /* Expand divider style */
+                .expand-divider {
+                    height: 1px;
+                    background-color: #DADCE0;
                 }
             </style>
             <div class="panel">
@@ -874,7 +892,7 @@ class SidebarConstructor {
 
                 const arrowSpan = document.createElement('span');
                 arrowSpan.className = 'arrow';
-                arrowSpan.innerHTML = edge.source === selectedObject ?
+                arrowSpan.innerHTML = edge.sourceUid === selectedObject ?
                     this.outgoingEdgeSvg : this.incomingEdgeSvg;
                 neighborDiv.appendChild(arrowSpan);
 
@@ -1028,11 +1046,17 @@ class SidebarConstructor {
         expandButtons.className = 'section-content';
 
         // Helper function to create expand buttons
-        const createExpandButton = (text, icon, onClick) => {
+        const createExpandButton = (text, icon, onClick, isGeneral = false) => {
             const button = document.createElement('button');
-            button.className = 'expand-button';
-            button.innerHTML = `${icon}<span class="expand-button-text">${text}</span>`;
-            
+            button.className = `expand-button ${isGeneral ? 'expand-button-general' : ''}`;
+            button.innerHTML = `
+                ${icon}
+                <span class="expand-button-text">${text}</span>
+                <svg class="expand-button-arrow" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#5f6368">
+                    <path d="M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z"/>
+                </svg>
+            `;
+
             // Track loading state
             let isLoading = false;
 
@@ -1066,18 +1090,25 @@ class SidebarConstructor {
         expandButtons.appendChild(createExpandButton(
             'All incoming edges',
             this.incomingEdgeSvg,
-            () => this.store.requestNodeExpansion(selectedNode, Edge.Direction.INCOMING.description)
+            () => this.store.requestNodeExpansion(selectedNode, Edge.Direction.INCOMING.description),
+            true
         ));
 
         // Add "All outgoing edges" button
         expandButtons.appendChild(createExpandButton(
             'All outgoing edges',
             this.outgoingEdgeSvg,
-            () => this.store.requestNodeExpansion(selectedNode, Edge.Direction.OUTGOING.description)
+            () => this.store.requestNodeExpansion(selectedNode, Edge.Direction.OUTGOING.description),
+            true
         ));
 
+        // Add a divider between general and specific edge options
+        const divider = document.createElement('div');
+        divider.className = 'expand-divider';
+        expandButtons.appendChild(divider);
+
         // Add individual edge type buttons
-        const edgeTypes = this.store.getEdgeTypesOfNode(selectedNode);
+        const edgeTypes = this.store.getEdgeTypesOfNodeSorted(selectedNode);
         edgeTypes.forEach(({label, direction}) => {
             const icon = direction === Edge.Direction.INCOMING.description ? this.incomingEdgeSvg : this.outgoingEdgeSvg;
             expandButtons.appendChild(createExpandButton(

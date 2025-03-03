@@ -1451,7 +1451,7 @@ class GraphVisualization {
             existingMenu.remove();
         }
 
-        const edgeButtons = this.store.getEdgeTypesOfNode(node).map(({label, direction}) => {
+        const edgeButtons = this.store.getEdgeTypesOfNodeSorted(node).map(({label, direction}) => {
            const directionSvg = direction === Edge.Direction.INCOMING.description ? this.incomingEdgeSvg : this.outgoingEdgeSvg;
 
            return `<div class="context-menu-item node-expand-edge" data-label="${label}" data-direction="${direction}">${directionSvg} ${label}</div>`;

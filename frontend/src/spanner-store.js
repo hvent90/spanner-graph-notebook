@@ -265,6 +265,19 @@ class GraphStore {
     }
 
     /**
+     * Returns all edge types, sorted by:
+     * - incoming, alphabetized
+     * - outgoing, alphabetized
+     * @param node
+     * @returns {Array<{label: string, direction: ("INCOMING"|"OUTGOING")}>}
+     */
+    getEdgeTypesOfNodeSorted(node) {
+        return this.getEdgeTypesOfNode(node)
+            .sort((a, b) => a.label < b.label)
+            .sort((a, b) => a.direction === 'OUTGOING');
+    }
+
+    /**
      * Gets all possible edge types for a node based on its labels and the schema
      * @param {Node} node - The node to get edge types for
      * @returns {Array<{label: string, direction: 'INCOMING' | 'OUTGOING'}>} Array of edge types with their directions
