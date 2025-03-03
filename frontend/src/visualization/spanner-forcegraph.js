@@ -105,6 +105,13 @@ class GraphVisualization {
     nodesToUnlockPosition = [];
 
     /**
+     * Informs the user to press ctrl/cmd + click (or right click) on a node to see more options.
+     * This is used for node expansion.
+     * @type {HTMLElement}
+     */
+    moreOptionsTooltip = null;
+
+    /**
      * @typedef {Object} ToolsConfig
      * @property {number} zoomInSpeed - Speed of zooming in.
      * @property {number} zoomInIncrement - Increment value for zooming in.
@@ -203,7 +210,7 @@ class GraphVisualization {
         }
 
         this.loadingNode = node;
-        
+
         // Create loading spinner if it doesn't exist
         if (!this.loadingSpinner) {
             this.loadingSpinner = document.createElement('div');
@@ -372,6 +379,7 @@ class GraphVisualization {
         this.initializeEvents(this.store);
         this.graph = ForceGraph()(this.mount);
         this._setupGraphTools(this.graph);
+        this._setupMoreOptionsTooltip();
         this._setupDrawLabelsOnEdges(this.graph);
         this._setupLineLength(this.graph);
         this._setupDrawNodes(this.graph);
@@ -681,6 +689,38 @@ class GraphVisualization {
                 }
             });
         }
+    }
+
+    _setupMoreOptionsTooltip() {
+        this.moreOptionsTooltip = document.createElement('div');
+        this.moreOptionsTooltip.style.cssText = `
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background-color: white;
+            color: #3C4043;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: "Google Sans", Roboto, Arial, sans-serif;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+        `;
+
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const keyCombo = isMac ? 'cmd + click' : 'ctrl + click';
+        this.moreOptionsTooltip.innerHTML = `
+            <div style="display: flex; align-items: center;">
+                <span>Use <strong>${keyCombo}</strong> for menu actions</span>
+            </div>
+        `;
+        this.mount.append(this.moreOptionsTooltip);   
     }
 
     /**
@@ -1499,6 +1539,17 @@ class GraphVisualization {
         offscreenCanvas.width = this.mount.offsetWidth;
         offscreenCanvas.height = this.mount.offsetHeight;
 
+        let hoverTimer;
+        const tooltipDelay = 100; // 1000ms
+
+        const showTooltip = () => {
+            this.moreOptionsTooltip.style.opacity = 1;
+        };
+
+        const hideTooltip = () => {
+            this.moreOptionsTooltip.style.opacity = 0;
+        };
+
         this.graph
             .width(this.mount.offsetWidth)
             .height(this.mount.clientHeight)
@@ -1512,6 +1563,13 @@ class GraphVisualization {
             .onNodeHover(node => {
                 if (!this.store.config.focusedGraphObject || !(this.store.config.focusedGraphObject instanceof Edge)) {
                     this.store.setFocusedObject(node);
+                }
+
+                clearTimeout(hoverTimer);
+                if (node) {
+                    hoverTimer = setTimeout(showTooltip, tooltipDelay);
+                } else {
+                    hideTooltip();
                 }
             })
             .onNodeDragEnd(node => {
