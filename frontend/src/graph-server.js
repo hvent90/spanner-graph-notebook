@@ -77,9 +77,9 @@ class GraphServer {
      * @param {Node} node
      * @param {Edge.Direction} direction
      * @param {string|undefined} edgeLabel
-     * @param {string|undefined} propertyType The type of the key property (e.g. 'INT64', 'STRING', etc)
+     * @param {{key: string, value: string|number, type: PropertyDeclarationType}[]} properties
      */
-    nodeExpansion(node, direction, edgeLabel, propertyType) {
+    nodeExpansion(node, direction, edgeLabel, properties) {
         if (!node.identifiers.length || !node.key_property_names.length) {
             return Promise.reject(new Error('Node does not have an identifier'));
         }
@@ -88,15 +88,26 @@ class GraphServer {
             return Promise.reject(new Error('Node does not have a UID'));
         }
 
-        // Property type is required
-        if (propertyType === undefined || propertyType === null) {
+        // Validate properties
+        if (!Array.isArray(properties)) {
             return Promise.reject(new Error('Property type must be provided'));
         }
 
-        // Validate and normalize property type
-        const upperPropertyType = propertyType.toUpperCase();
-        if (!GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING.has(upperPropertyType)) {
-            return Promise.reject(new Error(`Invalid property type: ${propertyType}. Allowed types are: ${Array.from(GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING).join(', ')}`));
+        for (const property of properties) {
+            if (!property.key) {
+                return Promise.reject(new Error('Missing key on property'));
+            }
+
+            if (!property.value) {
+                return Promise.reject(new Error('Missing value on property'));
+            }
+
+            const upperPropertyType = property.type.toUpperCase();
+            if (!GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING.has(upperPropertyType)) {
+                return Promise.reject(new Error(`Invalid property type: ${property.type}. Allowed types are: ${Array.from(GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING).join(', ')}`));
+            }
+            
+            property.type = upperPropertyType;
         }
 
         const {project, instance, database, graph} = JSON.parse(this.params);
@@ -104,9 +115,8 @@ class GraphServer {
         const request = {
             project, instance, database, graph,
             uid: node.uid,
-            node_key_property_name: node.key_property_names[0],
-            node_key_property_value: node.identifiers[0],
-            node_key_property_type: upperPropertyType,
+            node_labels: node.labels,
+            node_properties: properties,
             direction
         };
 

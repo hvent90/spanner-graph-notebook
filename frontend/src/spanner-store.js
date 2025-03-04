@@ -73,7 +73,7 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
  * @param {Node} node
  * @param {Edge.Direction} direction
  * @param {String} edgeLabel
- * @param {PropertyDeclarationType|null} propertyType
+ * @param {{key: string, value: string|number, type: PropertyDeclarationType}[]} properties
  * @param {GraphConfig} config - The graph configuration
  * @returns {void}
  */
@@ -542,13 +542,14 @@ class GraphStore {
      * @param {string|undefined} edgeLabel
      */
     requestNodeExpansion(node, direction, edgeLabel) {
-        // Get the property type for the node's key property
-        const propertyType = node.key_property_names && node.key_property_names.length > 0 
-            ? this.getPropertyType(node, node.key_property_names[0])
-            : null;
+        const properties = node.key_property_names.map(propertyName => ({
+            key: propertyName,
+            value: node.properties[propertyName],
+            type: this.getPropertyType(node, propertyName)
+        }));
 
         this.eventListeners[GraphStore.EventTypes.NODE_EXPANSION_REQUEST]
-            .forEach(callback => callback(node, direction, edgeLabel, propertyType, this.config));
+            .forEach(callback => callback(node, direction, edgeLabel, properties, this.config));
     }
 
     /**

@@ -132,7 +132,16 @@ describe('GraphServer', () => {
                 }
             });
 
-            await graphServer.nodeExpansion(graphNode, 'OUTGOING', undefined, 'STRING');
+            await graphServer.nodeExpansion(
+                graphNode, 
+                'OUTGOING', 
+                undefined, 
+                [{
+                    key: 'name',
+                    value: 'my-node-name',
+                    type: 'STRING'
+                }]
+            );
 
             expect(mockFetch).toHaveBeenCalledWith(
                 'http://localhost:8000/post_node_expansion',
@@ -145,9 +154,12 @@ describe('GraphServer', () => {
                         graph: 'test-graph',
                         mock: false,
                         uid: 'node1',
-                        node_key_property_name: 'name',
-                        node_key_property_value: 'my-node-name',
-                        node_key_property_type: 'STRING',
+                        node_labels: ['TestLabel1'],
+                        node_properties: [{
+                            key: 'name',
+                            value: 'my-node-name',
+                            type: 'STRING'
+                        }],
                         direction: 'OUTGOING'
                     })
                 }
@@ -158,8 +170,16 @@ describe('GraphServer', () => {
             const validTypes = ['INT64', 'STRING', 'FLOAT64', 'TIMESTAMP', 'BYTES', 'DATE', 'ENUM', 'NUMERIC', 'FLOAT32'];
             
             for (const type of validTypes) {
-                await expect(graphServer.nodeExpansion(mockNode, 'OUTGOING', undefined, type))
-                    .resolves.toBeDefined();
+                await expect(graphServer.nodeExpansion(
+                    mockNode, 
+                    'OUTGOING', 
+                    undefined, 
+                    [{
+                        key: 'test_key',
+                        value: 'test-value',
+                        type: type
+                    }]
+                )).resolves.toBeDefined();
             }
         });
 
@@ -167,8 +187,16 @@ describe('GraphServer', () => {
             const validTypes = ['int64', 'string', 'float64', 'timestamp', 'bytes', 'date', 'enum', 'numeric', 'float32'];
             
             for (const type of validTypes) {
-                await expect(graphServer.nodeExpansion(mockNode, 'OUTGOING', undefined, type))
-                    .resolves.toBeDefined();
+                await expect(graphServer.nodeExpansion(
+                    mockNode, 
+                    'OUTGOING', 
+                    undefined, 
+                    [{
+                        key: 'test_key',
+                        value: 'test-value',
+                        type: type
+                    }]
+                )).resolves.toBeDefined();
             }
         });
 
@@ -176,8 +204,16 @@ describe('GraphServer', () => {
             const invalidTypes = ['ARRAY', 'GRAPH_ELEMENT', 'GRAPH_PATH', 'JSON', 'PROTO', 'STRUCT'];
 
             for (const type of invalidTypes) {
-                await expect(graphServer.nodeExpansion(mockNode, 'OUTGOING', undefined, type))
-                    .rejects.toThrow(/Invalid property type/);
+                await expect(graphServer.nodeExpansion(
+                    mockNode, 
+                    'OUTGOING', 
+                    undefined, 
+                    [{
+                        key: 'test_key',
+                        value: 'test-value',
+                        type: type
+                    }]
+                )).rejects.toThrow(/Invalid property type/);
             }
         });
 
@@ -189,19 +225,36 @@ describe('GraphServer', () => {
         });
 
         it('should normalize property type to uppercase in request', async () => {
-            await graphServer.nodeExpansion(mockNode, 'OUTGOING', undefined, 'string');
+            await graphServer.nodeExpansion(
+                mockNode, 
+                'OUTGOING', 
+                undefined, 
+                [{
+                    key: 'test_key',
+                    value: 'test-value',
+                    type: 'string'
+                }]
+            );
             
             expect(mockFetch).toHaveBeenCalledWith(
                 expect.any(String),
                 expect.objectContaining({
-                    body: expect.stringContaining('"node_key_property_type":"STRING"')
+                    body: expect.stringContaining('"type":"STRING"')
                 })
             );
         });
 
         it('should include error details in rejection message', async () => {
-            await expect(graphServer.nodeExpansion(mockNode, 'OUTGOING', undefined, 'INVALID'))
-                .rejects.toThrow(/Allowed types are: BOOL, BYTES, DATE, ENUM, INT64, NUMERIC, FLOAT32, FLOAT64, STRING, TIMESTAMP/);
+            await expect(graphServer.nodeExpansion(
+                mockNode, 
+                'OUTGOING', 
+                undefined, 
+                [{
+                    key: 'test_key',
+                    value: 'test-value',
+                    type: 'INVALID'
+                }]
+            )).rejects.toThrow(/Allowed types are: BOOL, BYTES, DATE, ENUM, INT64, NUMERIC, FLOAT32, FLOAT64, STRING, TIMESTAMP/);
         });
     });
 
