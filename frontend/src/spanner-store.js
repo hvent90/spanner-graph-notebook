@@ -287,6 +287,10 @@ class GraphStore {
             return [];
         }
 
+        if (!this.config || !this.config.schema || !this.config.schema.rawSchema || !this.config.schema.rawSchema.nodeTables) {
+            return [];
+        }
+
         // Find matching node tables for this node's labels
         const matchingNodeTables = this.config.schema.rawSchema.nodeTables.filter(nodeTable =>
             node.labels.some(label => nodeTable.labelNames.includes(label))
