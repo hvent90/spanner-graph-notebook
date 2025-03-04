@@ -33,7 +33,7 @@ class GraphServer {
      * The allowed property types for node expansion
      * @type {Set<string>}
      */
-    static ALLOWED_PROPERTY_TYPES = new Set([
+    static ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING = new Set([
         'BOOL',
         'BYTES',
         'DATE',
@@ -95,8 +95,8 @@ class GraphServer {
 
         // Validate and normalize property type
         const upperPropertyType = propertyType.toUpperCase();
-        if (!GraphServer.ALLOWED_PROPERTY_TYPES.has(upperPropertyType)) {
-            return Promise.reject(new Error(`Invalid property type: ${propertyType}. Allowed types are: ${Array.from(GraphServer.ALLOWED_PROPERTY_TYPES).join(', ')}`));
+        if (!GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING.has(upperPropertyType)) {
+            return Promise.reject(new Error(`Invalid property type: ${propertyType}. Allowed types are: ${Array.from(GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING).join(', ')}`));
         }
 
         const {project, instance, database, graph} = JSON.parse(this.params);
