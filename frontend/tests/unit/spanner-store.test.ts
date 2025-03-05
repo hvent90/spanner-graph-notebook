@@ -414,24 +414,24 @@ describe('GraphStore', () => {
 
             // Test edges for node1 (should have edge1 only)
             const node1Edges = store.getEdgesOfNode(testConfig.nodes[node1Data.identifier]);
-            expect(node1Edges).toHaveLength(1);
+            expect(node1Edges.size).toBe(1);
             expect(node1Edges).toContain(testConfig.edges[edge1Data.identifier]);
             
             // Test edges for node2 (should have both edge1 and edge2)
             const node2Edges = store.getEdgesOfNode(testConfig.nodes[node2Data.identifier]);
-            expect(node2Edges).toHaveLength(2);
+            expect(node2Edges.size).toBe(2);
             expect(node2Edges).toContain(testConfig.edges[edge1Data.identifier]);
             expect(node2Edges).toContain(testConfig.edges[edge2Data.identifier]);
             
             // Test edges for node3 (should have edge2 only)
             const node3Edges = store.getEdgesOfNode(testConfig.nodes[node3Data.identifier]);
-            expect(node3Edges).toHaveLength(1);
+            expect(node3Edges.size).toBe(1);
             expect(node3Edges).toContain(testConfig.edges[edge2Data.identifier]);
             
             // Test with null/invalid input
-            expect(store.getEdgesOfNode(null)).toHaveLength(0);
-            expect(store.getEdgesOfNode(undefined)).toHaveLength(0);
-            expect(store.getEdgesOfNode({} as any)).toHaveLength(0);
+            expect(store.getEdgesOfNode(null).size).toBe(0);
+            expect(store.getEdgesOfNode(undefined).size).toBe(0);
+            expect(store.getEdgesOfNode({} as any).size).toBe(0);
         });
 
         it('should return neighbors of a given node', () => {
@@ -488,30 +488,34 @@ describe('GraphStore', () => {
 
             // Test neighbors of node1 (should only have node2)
             const node1Neighbors = store.getNeighborsOfNode(testConfig.nodes[node1Data.identifier]);
-            expect(node1Neighbors).toHaveLength(1);
-            expect(node1Neighbors).toContain(testConfig.nodes[node2Data.identifier]);
+            const node1NeighborUids = Object.keys(node1Neighbors);
+            expect(node1NeighborUids.length).toBe(1);
+            expect(node1NeighborUids).toContain(node2Data.identifier);
 
             // Test neighbors of node2 (should have node1, node3, and node4)
             const node2Neighbors = store.getNeighborsOfNode(testConfig.nodes[node2Data.identifier]);
-            expect(node2Neighbors).toHaveLength(3);
-            expect(node2Neighbors).toContain(testConfig.nodes[node1Data.identifier]);
-            expect(node2Neighbors).toContain(testConfig.nodes[node3Data.identifier]);
-            expect(node2Neighbors).toContain(testConfig.nodes[node4Data.identifier]);
+            const node2NeighborUids = Object.keys(node2Neighbors);
+            expect(Object.keys(node2Neighbors).length).toBe(3);
+            expect(node2NeighborUids).toContain(node1Data.identifier);
+            expect(node2NeighborUids).toContain(node3Data.identifier);
+            expect(node2NeighborUids).toContain(node4Data.identifier);
 
             // Test neighbors of node3 (should only have node2)
             const node3Neighbors = store.getNeighborsOfNode(testConfig.nodes[node3Data.identifier]);
-            expect(node3Neighbors).toHaveLength(1);
-            expect(node3Neighbors).toContain(testConfig.nodes[node2Data.identifier]);
+            const node3NeighborUids = Object.keys(node3Neighbors);
+            expect(node3NeighborUids.length).toBe(1);
+            expect(node3NeighborUids).toContain(node2Data.identifier);
 
             // Test neighbors of node4 (should only have node2)
             const node4Neighbors = store.getNeighborsOfNode(testConfig.nodes[node4Data.identifier]);
-            expect(node4Neighbors).toHaveLength(1);
-            expect(node4Neighbors).toContain(testConfig.nodes[node2Data.identifier]);
+            const node4NeighborUids = Object.keys(node4Neighbors);
+            expect(node4NeighborUids.length).toBe(1);
+            expect(node4NeighborUids).toContain(node2Data.identifier);
 
             // Test with null/invalid input
-            expect(store.getNeighborsOfNode(null)).toHaveLength(0);
-            expect(store.getNeighborsOfNode(undefined)).toHaveLength(0);
-            expect(store.getNeighborsOfNode({} as any)).toHaveLength(0);
+            expect(store.getNeighborsOfNode(null).size).toBe(0);
+            expect(store.getNeighborsOfNode(undefined).size).toBe(0);
+            expect(store.getNeighborsOfNode({} as any).size).toBe(0);
         });
 
         it('should return edges of a graph object', () => {
@@ -554,14 +558,14 @@ describe('GraphStore', () => {
 
             // Test edges for node object
             const nodeEdges = store.getEdgesOfObject(testConfig.nodes[node2Data.identifier]);
-            expect(nodeEdges).toHaveLength(2);
+            expect(nodeEdges.size).toBe(2);
             expect(nodeEdges).toContain(testConfig.edges[edge1Data.identifier]);
             expect(nodeEdges).toContain(testConfig.edges[edge2Data.identifier]);
 
             // Test with null/invalid input
-            expect(store.getEdgesOfObject(null)).toHaveLength(0);
-            expect(store.getEdgesOfObject(undefined)).toHaveLength(0);
-            expect(store.getEdgesOfObject({} as any)).toHaveLength(0);
+            expect(store.getEdgesOfObject(null).size).toBe(0);
+            expect(store.getEdgesOfObject(undefined).size).toBe(0);
+            expect(store.getEdgesOfObject({} as any).size).toBe(0);
         });
 
         describe('Edge and Node Relationships', () => {

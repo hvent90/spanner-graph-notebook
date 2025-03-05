@@ -240,28 +240,38 @@ class GraphStore {
         this.eventListeners[GraphStore.EventTypes.COLOR_SCHEME].forEach(callback => callback(colorScheme, this.config));
     }
 
+    /**
+     * Get edges associated with a graph object.
+     * @param {GraphObject} graphObject - The graph object to get edges for.
+     * @returns {Set<Edge>} A set of edges associated with the graph object.
+     */
     getEdgesOfObject(graphObject) {
         if (!graphObject || !graphObject instanceof GraphObject) {
-            return [];
+            return new Set();
         }
 
         if (graphObject instanceof Node) {
             return this.getEdgesOfNode(graphObject);
         }
 
-        return [];
+        return new Set();
     }
 
     /**
-     * @param {Node} node
-     * @returns {Edge[]}
+     * Get edges associated with a node.
+     * @param {Node} node - The node to get edges for.
+     * @returns {Set<Edge>} A set of edges associated with the node.
      */
     getEdgesOfNode(node) {
         if (!node || !node instanceof Node) {
-            return [];
+            return new Set();
         }
 
-        return this.getEdges().filter(edge => edge.sourceUid === node.uid || edge.destinationUid === node.uid);
+        if (!this.config.edgesOfNode[node.uid]) {
+            this.config.edgesOfNode[node.uid] = new Set();
+        }
+
+        return this.config.edgesOfNode[node.uid];
     }
 
     /**
@@ -327,20 +337,28 @@ class GraphStore {
     }
 
     /**
-     * @param {Node} node
-     * @returns {Node[]}
+     * Get neighbors of a node.
+     * @param {Node} node - The node to get neighbors for.
+     * @returns {NeighborMap} A set of neighbor information objects.
      */
     getNeighborsOfNode(node) {
         if (!node || !(node instanceof Node)) {
-            return [];
+            return {}
         }
 
-        return this.getEdgesOfNode(node).map(edge => edge.sourceUid === node.uid ?
-            this.config.nodes[edge.destinationUid] :
-            this.config.nodes[edge.sourceUid]
-        );
+        if (!this.config.neighborsOfNode[node.uid]) {
+            this.config.neighborsOfNode[node.uid] = {};
+        }
+
+        return this.config.neighborsOfNode[node.uid];
     }
 
+    /**
+     * Check if an edge is connected to a specific node.
+     * @param {Edge} edge - The edge to check.
+     * @param {Node} node - The node to check connection with.
+     * @returns {boolean} True if the edge is connected to the node, false otherwise.
+     */
     edgeIsConnectedToNode(edge, node) {
         if (!edge || !(edge instanceof Edge) || !node || !(node instanceof Node)) {
             return false;
@@ -349,22 +367,52 @@ class GraphStore {
         return edge.sourceUid === node.uid || edge.destinationUid === node.uid
     }
 
+    /**
+     * Check if a node is a neighbor to another node.
+     * @param {Node} node - The node to check from.
+     * @param {Node} potentialNeighbor - The potential neighbor node.
+     * @returns {boolean} True if the nodes are neighbors, false otherwise.
+     */
     nodeIsNeighborTo(node, potentialNeighbor) {
-        return this.getNeighborsOfNode(node).includes(potentialNeighbor);
+        if (!(potentialNeighbor instanceof Node)) {
+            return false;
+        }
+
+        return Boolean(this.getNeighborsOfNode(node)[potentialNeighbor.uid]);
     }
 
+    /**
+     * Check if an edge is connected to the focused node.
+     * @param {Edge} edge - The edge to check.
+     * @returns {boolean} True if the edge is connected to the focused node, false otherwise.
+     */
     edgeIsConnectedToFocusedNode(edge) {
         return this.edgeIsConnectedToNode(edge, this.config.focusedGraphObject);
     }
 
+    /**
+     * Check if an edge is connected to the selected node.
+     * @param {Edge} edge - The edge to check.
+     * @returns {boolean} True if the edge is connected to the selected node, false otherwise.
+     */
     edgeIsConnectedToSelectedNode(edge) {
         return this.edgeIsConnectedToNode(edge, this.config.selectedGraphObject);
     }
 
+    /**
+     * Check if a node is a neighbor to the focused node.
+     * @param {Node} node - The node to check.
+     * @returns {boolean} True if the node is a neighbor to the focused node, false otherwise.
+     */
     nodeIsNeighborToFocusedNode(node) {
         return this.nodeIsNeighborTo(node, this.config.focusedGraphObject);
     }
 
+    /**
+     * Check if a node is a neighbor to the selected node.
+     * @param {Node} node - The node to check.
+     * @returns {boolean} True if the node is a neighbor to the selected node, false otherwise.
+     */
     nodeIsNeighborToSelectedNode(node) {
         return this.nodeIsNeighborTo(node, this.config.selectedGraphObject);
     }
@@ -472,7 +520,31 @@ class GraphStore {
     }
 
     /**
-     * @returns {Array<Node>|*[]}
+     * Get a node by its UID.
+     * @param {GraphObjectUID} uid - The unique identifier of the node.
+     * @returns {Node|null} The node with the given UID, or null if not found.
+     */
+    getNode(uid) {
+        if (typeof uid !== 'string' || uid.length === 0) {
+            return null;
+        }
+
+        let nodeMap = {}
+        switch (this.config.viewMode) {
+            case GraphConfig.ViewModes.DEFAULT:
+                nodeMap = this.config.nodes;
+                break;
+            case GraphConfig.ViewModes.SCHEMA:
+                nodeMap = this.config.schemaNodes;
+                break;
+        }
+
+        return nodeMap[uid];
+    }
+
+    /**
+     * Get all nodes in the current view mode.
+     * @returns {Array<Node>} An array of all nodes.
      */
     getNodes() {
         /** @type {NodeMap} */
@@ -490,7 +562,8 @@ class GraphStore {
     }
 
     /**
-     * @returns {Array<Edge>|*[]}
+     * Get all edges in the current view mode.
+     * @returns {Array<Edge>} An array of all edges.
      */
     getEdges() {
         /** @type {EdgeMap} */

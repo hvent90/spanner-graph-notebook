@@ -857,18 +857,17 @@ class SidebarConstructor {
          */
         const neighborRowElements = [];
         if (selectedObject instanceof Node) {
-            // Get all edges and create a Set to track unique neighbors
-            const edges = this.store.getEdgesOfNode(selectedObject);
-            const seenNeighbors = new Set();
-            
-            edges.forEach((edge) => {
-                const neighbor = edge.sourceUid === selectedObject.uid ?
-                    this.store.config.nodes[edge.destinationUid] : this.store.config.nodes[edge.sourceUid];
-                // Skip if: neighbor is null, already seen, or is the selected node itself
-                if (!neighbor || seenNeighbors.has(neighbor.uid) || neighbor.uid === selectedObject.uid) {
-                    return;
+            const neighborMap = this.store.getNeighborsOfNode(selectedObject);
+            for (const nodeUid of Object.keys(neighborMap)) {
+                const node = this.store.getNode(nodeUid);
+                if (!(node instanceof Node)) {
+                    continue;
                 }
-                seenNeighbors.add(neighbor.uid);
+
+                const edge = neighborMap[nodeUid];
+                if (!(edge instanceof Edge)) {
+                    continue;
+                }
 
                 const neighborRowDiv = document.createElement('div');
                 neighborRowDiv.className = 'neighbor-row';
@@ -878,8 +877,8 @@ class SidebarConstructor {
 
                 // Make the entire neighbor area interactive
                 neighborDiv.addEventListener('mouseenter', () => {
-                    if (this.store.config.selectedGraphObject !== neighbor) {
-                        this.store.setFocusedObject(neighbor);
+                    if (this.store.config.selectedGraphObject !== node) {
+                        this.store.setFocusedObject(node);
                     }
                 });
                 neighborDiv.addEventListener('mouseleave', () => {
@@ -887,7 +886,7 @@ class SidebarConstructor {
                 });
                 neighborDiv.addEventListener('click', () => {
                     this.store.setFocusedObject(null);
-                    this.store.setSelectedObject(neighbor);
+                    this.store.setSelectedObject(node);
                 });
 
                 const arrowSpan = document.createElement('span');
@@ -898,7 +897,7 @@ class SidebarConstructor {
 
 
                 // Node Neighbor - now without its own click handlers since the parent handles it
-                const nodeChip = this._nodeChipHtml(neighbor, false);
+                const nodeChip = this._nodeChipHtml(node, false);
                 nodeChip.style.marginRight = '8px';
                 neighborDiv.appendChild(nodeChip);
 
@@ -906,7 +905,7 @@ class SidebarConstructor {
                 if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
                     const idContainer = document.createElement('span');
                     idContainer.className = 'neighbor-id';
-                    idContainer.textContent = neighbor.identifiers.join(', ');
+                    idContainer.textContent = node.identifiers.join(', ');
                     neighborDiv.appendChild(idContainer);
                 }
 
@@ -920,7 +919,7 @@ class SidebarConstructor {
                 neighborRowDiv.appendChild(edgeDiv);
 
                 neighborRowElements.push(neighborRowDiv);
-            });
+            }
         } else if (selectedObject instanceof Edge) {
             const container = document.createElement('div');
             container.className = 'section';
@@ -1193,7 +1192,6 @@ class Sidebar {
 
         store.addEventListener(GraphStore.EventTypes.VIEW_MODE_CHANGE,
             (viewMode, config) => {
-                this.neighbors = [];
                 this.selectedObject = config.selectedGraphObject;
 
                 // Clean up sidebar
@@ -1209,20 +1207,7 @@ class Sidebar {
 
         store.addEventListener(GraphStore.EventTypes.SELECT_OBJECT,
             (object, config) => {
-                this.neighbors = [];
                 this.selectedObject = object;
-
-                if (object instanceof Node) {
-                    this.store.getNeighborsOfNode(object).forEach(neighbor => {
-                        this.neighbors.push(neighbor);
-                    });
-                }
-
-                if (object instanceof Edge) {
-                    [object.source, object.target].forEach(neighbor => {
-                        this.neighbors.push(neighbor);
-                    });
-                }
 
                 // Clean up sidebar
                 this.mount.innerHTML = '';

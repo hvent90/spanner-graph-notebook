@@ -19,8 +19,10 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
     Schema = require('./models/schema');
 }
 
+/** @typedef {GraphObjectUID} NodeUID */
 /** @typedef {Record<GraphObjectUID, Node>} NodeMap */
 /** @typedef {Record<GraphObjectUID, Edge>} EdgeMap */
+/** @typedef {Record<NodeUID, Edge>} NeighborMap */
 
 class GraphConfig {
 
@@ -145,6 +147,18 @@ class GraphConfig {
     lastLayoutMode = GraphConfig.LayoutModes.FORCE;
 
     showLabels = false;
+
+    
+    /**
+     * Map of neighbors with the connecting edges
+     * @type {Object.<GraphObjectUID, NeighborMap>}
+     */
+    neighborsOfNode = {}
+    /**
+     * Set of edges pertaining to a specific node
+     * @type {Object.<GraphObjectUID, Set<Edge>>}
+     */
+    edgesOfNode = {}
 
     /**
      * Constructs a new GraphConfig instance.
@@ -281,6 +295,7 @@ class GraphConfig {
     /**
      * Parses an array of node data, instantiates Nodes, and adds them to the graph.
      * @param {Array<NodeData>} nodesData - An array of objects representing the data for each node.
+     * @returns {NodeMap}
      * @throws {Error} Throws an error if `nodesData` is not an array.
      */
     parseNodes(nodesData) {
@@ -317,6 +332,7 @@ class GraphConfig {
     /**
      * Parses an array of edge data, instantiates Edges, and adds them to the graph.
      * @param {Array<EdgeData>} edgesData - An array of objects representing the data for each edge.
+     * @returns {EdgeMap}
      * @throws {Error} Throws an error if `edgesData` is not an array.
      */
     parseEdges(edgesData) {
@@ -341,6 +357,9 @@ class GraphConfig {
             }
             if (edge instanceof Edge) {
                 edges[edge.uid] = edge;
+                
+                // Update indices right when edge is created
+                this._updateEdgeIndices(edge);
             } else {
                 edge.instantiationErrorReason = 'Could not construct an instance of Edge';
                 console.error(edge.instantiationErrorReason, { edgeData, edge });
@@ -348,6 +367,35 @@ class GraphConfig {
         });
 
         return edges;
+    }
+
+    /**
+     * Update the indexing of node and edge relationships
+     * @param {Edge} edge
+     * @private
+     */
+    _updateEdgeIndices(edge) {
+        if (!this.neighborsOfNode[edge.sourceUid]) {
+            this.neighborsOfNode[edge.sourceUid] = {};
+        }
+
+        if (!this.neighborsOfNode[edge.destinationUid]) {
+            this.neighborsOfNode[edge.destinationUid] = {};
+        }
+
+        if (!this.edgesOfNode[edge.sourceUid]) {
+            this.edgesOfNode[edge.sourceUid] = new Set();
+        }
+
+        if (!this.edgesOfNode[edge.destinationUid]) {
+            this.edgesOfNode[edge.destinationUid] = new Set();
+        }
+
+        this.neighborsOfNode[edge.sourceUid][edge.destinationUid] = edge;
+        this.neighborsOfNode[edge.destinationUid][edge.sourceUid] = edge;
+
+        this.edgesOfNode[edge.sourceUid].add(edge);
+        this.edgesOfNode[edge.destinationUid].add(edge);
     }
 
     /**
