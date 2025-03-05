@@ -82,7 +82,7 @@ class GraphObject {
      * @returns {string}
      */
     getDisplayName() {
-        return this.labels[0];
+        return this.labels.join(' | ');
     }
 
     /**

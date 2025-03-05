@@ -81,10 +81,6 @@ class Node extends GraphObject {
                 }
             }
         }
-
-        if (!this.identifiers.length) {
-            this.identifiers.push('Node');
-        }
     }
 }
 

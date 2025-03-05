@@ -40,14 +40,5 @@ describe('Node', () => {
             const graphNode = new GraphNode(validNodeData);
             expect(graphNode.identifiers).toEqual(['Node Name', 'example']);
         });
-
-        it('should return default identifier if no matching properties are found', () => {
-            const graphNode = new GraphNode({
-                ...validNodeData,
-                properties: {}
-            });
-
-            expect(graphNode.identifiers).toEqual(['Node']);
-        });
     });
 });

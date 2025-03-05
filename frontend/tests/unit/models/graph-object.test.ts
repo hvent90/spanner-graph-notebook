@@ -40,11 +40,11 @@ describe('Graph Object', () => {
         }).toThrow(new TypeError('Invalid identifier'));
     });
 
-    it('should return the first label as its display name', () => {
+    it('should join labels with a | for its display name', () => {
         const graphObject = new GraphObject({
             labels: ['foo', 'bar'], properties: [], identifier: '1'
         });
 
-        expect(graphObject.getDisplayName()).toBe('foo');
+        expect(graphObject.getDisplayName()).toBe('foo | bar');
     });
 });
