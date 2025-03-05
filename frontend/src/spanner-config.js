@@ -160,6 +160,9 @@ class GraphConfig {
      */
     edgesOfNode = {}
 
+    nodeCount = 0;
+    schemaNodeCount = 0;
+
     /**
      * Constructs a new GraphConfig instance.
      * @constructor
@@ -175,6 +178,7 @@ class GraphConfig {
      */
     constructor({ nodesData, edgesData, colorPalette, colorScheme, rowsData, schemaData, queryResult}) {
         this.nodes = this.parseNodes(nodesData);
+        this.nodeCount = Object.keys(this.nodes).length;
         this.edges = this.parseEdges(edgesData);
         this.parseSchema(schemaData);
 
@@ -267,6 +271,7 @@ class GraphConfig {
             }
         );
         this.schemaNodes = this.parseNodes(nodesData);
+        this.schemaNodeCount = Object.keys(this.schemaNodes).length;
 
         const edgesData = this.schema.rawSchema.edgeTables.map(
             /**
@@ -412,6 +417,8 @@ class GraphConfig {
                 this.nodes[uid] = newNodes[uid];
             }
         }
+
+        this.nodeCount = Object.keys(this.nodes).length;
 
         for (const uid of Object.keys(newEdges)) {
             if (!this.edges[uid]) {

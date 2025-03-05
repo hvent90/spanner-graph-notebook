@@ -542,6 +542,10 @@ class GraphStore {
         return nodeMap[uid];
     }
 
+    getNodeCount() {
+        return this.config.viewMode === GraphConfig.ViewModes.DEFAULT ? this.config.nodeCount : this.config.schemaNodeCount;
+    }
+
     /**
      * Get all nodes in the current view mode.
      * @returns {Array<Node>} An array of all nodes.

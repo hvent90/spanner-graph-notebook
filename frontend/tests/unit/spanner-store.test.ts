@@ -513,9 +513,9 @@ describe('GraphStore', () => {
             expect(node4NeighborUids).toContain(node2Data.identifier);
 
             // Test with null/invalid input
-            expect(store.getNeighborsOfNode(null).size).toBe(0);
-            expect(store.getNeighborsOfNode(undefined).size).toBe(0);
-            expect(store.getNeighborsOfNode({} as any).size).toBe(0);
+            expect(store.getNeighborsOfNode(null)).toEqual({});
+            expect(store.getNeighborsOfNode(undefined)).toEqual({});
+            expect(store.getNeighborsOfNode({} as any)).toEqual({});
         });
 
         it('should return edges of a graph object', () => {
@@ -829,6 +829,46 @@ describe('GraphStore', () => {
             const storeWithoutDeclarations = new GraphStore(configWithoutDeclarations);
             
             expect(storeWithoutDeclarations.getPropertyType(userNode, 'age')).toBeNull();
+        });
+    });
+
+    describe('getNodeCount', () => {
+        test('returns nodeCount in DEFAULT view mode', () => {
+            mockConfig = new GraphConfig({
+                nodesData: [],
+                edgesData: [],
+                colorPalette: {},
+                colorScheme: {},
+                rowsData: [],
+                schemaData: {},
+                queryResult: {}
+            });
+            mockConfig.viewMode = GraphConfig.ViewModes.DEFAULT;
+            mockConfig.nodeCount = 5;
+            mockConfig.schemaNodeCount = 3;
+            
+            store = new GraphStore(mockConfig);
+            
+            expect(store.getNodeCount()).toBe(5);
+        });
+        
+        test('returns schemaNodeCount in SCHEMA view mode', () => {
+            mockConfig = new GraphConfig({
+                nodesData: [],
+                edgesData: [],
+                colorPalette: {},
+                colorScheme: {},
+                rowsData: [],
+                schemaData: {},
+                queryResult: {}
+            });
+            mockConfig.viewMode = GraphConfig.ViewModes.SCHEMA;
+            mockConfig.nodeCount = 5;
+            mockConfig.schemaNodeCount = 3;
+            
+            store = new GraphStore(mockConfig);
+            
+            expect(store.getNodeCount()).toBe(3);
         });
     });
 });

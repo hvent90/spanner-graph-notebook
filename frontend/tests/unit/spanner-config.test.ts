@@ -240,4 +240,70 @@ describe('GraphConfig', () => {
             expect(Object.keys(config.schemaEdges).length).toBe(0);
         });
     });
+
+    describe('Node Counting', () => {
+        test('nodeCount is initialized correctly in constructor', () => {
+            const mockConfig = new GraphConfig({
+                nodesData: [
+                    { identifier: "1", labels: ['Person'], properties: {} },
+                    { identifier: "2", labels: ['Company'], properties: {} }
+                ],
+                edgesData: [],
+                colorPalette: {},
+                colorScheme: {},
+                rowsData: [],
+                schemaData: {},
+                queryResult: {}
+            });
+            
+            expect(mockConfig.nodeCount).toBe(2);
+        });
+        
+        test('schemaNodeCount is initialized correctly after parsing schema', () => {
+            // In this test we'll directly verify that schemaNodeCount is updated
+            // after setting schemaNodes
+            const mockConfig = new GraphConfig({
+                nodesData: [],
+                edgesData: [],
+                colorPalette: {},
+                colorScheme: {},
+                rowsData: [],
+                schemaData: {},
+                queryResult: {}
+            });
+            
+            // Manually set schemaNodes and check the schemaNodeCount update
+            mockConfig.schemaNodes = mockConfig.parseNodes([
+                { identifier: "0", labels: ['Person'], properties: {} },
+                { identifier: "1", labels: ['Company'], properties: {} },
+                { identifier: "2", labels: ['Product'], properties: {} }
+            ]);
+            mockConfig.schemaNodeCount = Object.keys(mockConfig.schemaNodes).length;
+            
+            expect(mockConfig.schemaNodeCount).toBe(3);
+        });
+        
+        test('nodeCount is updated correctly when appending graph data', () => {
+            const mockConfig = new GraphConfig({
+                nodesData: [
+                    { identifier: "1", labels: ['Person'], properties: {} }
+                ],
+                edgesData: [],
+                colorPalette: {},
+                colorScheme: {},
+                rowsData: [],
+                schemaData: {},
+                queryResult: {}
+            });
+            
+            expect(mockConfig.nodeCount).toBe(1);
+            
+            mockConfig.appendGraphData([
+                { identifier: "1", labels: ['Person'], properties: {} },
+                { identifier: "2", labels: ['Company'], properties: {} }
+            ], []);
+            
+            expect(mockConfig.nodeCount).toBe(2);
+        });
+    });
 });

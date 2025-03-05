@@ -862,7 +862,7 @@ class GraphVisualization {
         this.graph.calculateLineLengthByCluster = () => {
             this.graph
                 .d3Force('link').distance(link => {
-                const graphSize = Math.max(this.store.getNodes().length, 15);
+                const graphSize = Math.max(this.store.getNodeCount(), 15);
                 let distance = Math.log10(graphSize) * 40;
 
                 // Only apply neighborhood clustering logic if using force layout
