@@ -88,26 +88,30 @@ class GraphServer {
             return Promise.reject(new Error('Node does not have a UID'));
         }
 
-        // Validate properties
-        if (!Array.isArray(properties)) {
-            return Promise.reject(new Error('Property type must be provided'));
-        }
+        /** @type {{key: string, value: string|number, type: PropertyDeclarationType}[]} */
+        const validProperties = [];
+        if (Array.isArray(properties)) {
+            for (const property of properties) {
+                if (!property.key) {
+                    continue;
+                }
 
-        for (const property of properties) {
-            if (!property.key) {
-                return Promise.reject(new Error('Missing key on property'));
-            }
+                if (!property.value) {
+                    continue;
+                }
 
-            if (!property.value) {
-                return Promise.reject(new Error('Missing value on property'));
-            }
+                if (!(typeof property.type === 'string'))
+                {
+                    continue;
+                }
 
-            const upperPropertyType = property.type.toUpperCase();
-            if (!GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING.has(upperPropertyType)) {
-                return Promise.reject(new Error(`Invalid property type: ${property.type}. Allowed types are: ${Array.from(GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING).join(', ')}`));
+                const upperPropertyType = property.type.toUpperCase();
+                if (!GraphServer.ALLOWED_PROPERTY_TYPES_FOR_NODE_EXPANSION_MATCHING.has(upperPropertyType)) {
+                    continue;
+                }
+
+                validProperties.push(property);
             }
-            
-            property.type = upperPropertyType;
         }
 
         const {project, instance, database, graph} = JSON.parse(this.params);
@@ -116,7 +120,7 @@ class GraphServer {
             project, instance, database, graph,
             uid: node.uid,
             node_labels: node.labels,
-            node_properties: properties,
+            node_properties: validProperties,
             direction
         };
 

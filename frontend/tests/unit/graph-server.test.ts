@@ -187,74 +187,64 @@ describe('GraphServer', () => {
             const validTypes = ['int64', 'string', 'float64', 'timestamp', 'bytes', 'date', 'enum', 'numeric', 'float32'];
             
             for (const type of validTypes) {
-                await expect(graphServer.nodeExpansion(
-                    mockNode, 
-                    'OUTGOING', 
-                    undefined, 
-                    [{
-                        key: 'test_key',
-                        value: 'test-value',
-                        type: type
-                    }]
-                )).resolves.toBeDefined();
+                const property = {
+                    key: 'test_key',
+                    value: 'test_value',
+                    type
+                };
+
+                await graphServer.nodeExpansion(
+                    mockNode,
+                    'OUTGOING',
+                    undefined,
+                    [property]
+                );
+
+                expect(mockFetch).toHaveBeenCalledWith(
+                    expect.any(String),
+                    expect.objectContaining({
+                        body: expect.stringContaining(`"node_properties":[${JSON.stringify(property)}]`)
+                    })
+                );
+                mockFetch.mockClear();
             }
         });
 
-        it('should reject invalid property types', async () => {
-            const invalidTypes = ['ARRAY', 'GRAPH_ELEMENT', 'GRAPH_PATH', 'JSON', 'PROTO', 'STRUCT'];
+        it('should silently skip invalid property types', async () => {
+            const invalidTypes = [
+                'TYPE_CODE_UNSPECIFIED',
+                'ARRAY',
+                'STRUCT',
+                'JSON',
+                'PROTO',
+                null,
+                undefined,
+                [],
+                {},
+                12345,
+                'foo'
+            ];
 
             for (const type of invalidTypes) {
-                await expect(graphServer.nodeExpansion(
+                await graphServer.nodeExpansion(
                     mockNode, 
                     'OUTGOING', 
                     undefined, 
                     [{
-                        key: 'test_key',
+                        key: 'test-key',
                         value: 'test-value',
                         type: type
                     }]
-                )).rejects.toThrow(/Invalid property type/);
+                );
+                
+                expect(mockFetch).toHaveBeenCalledWith(
+                    expect.any(String),
+                    expect.objectContaining({
+                        body: expect.stringContaining('"node_properties":[]')
+                    })
+                );
+                mockFetch.mockClear();
             }
-        });
-
-        it('should reject undefined/null property types', async () => {
-            await expect(graphServer.nodeExpansion(mockNode, 'OUTGOING', undefined, undefined))
-                .rejects.toThrow('Property type must be provided');
-            await expect(graphServer.nodeExpansion(mockNode, 'OUTGOING', undefined, null))
-                .rejects.toThrow('Property type must be provided');
-        });
-
-        it('should normalize property type to uppercase in request', async () => {
-            await graphServer.nodeExpansion(
-                mockNode, 
-                'OUTGOING', 
-                undefined, 
-                [{
-                    key: 'test_key',
-                    value: 'test-value',
-                    type: 'string'
-                }]
-            );
-            
-            expect(mockFetch).toHaveBeenCalledWith(
-                expect.any(String),
-                expect.objectContaining({
-                    body: expect.stringContaining('"type":"STRING"')
-                })
-            );
-        });
-
-        it('should include error details in rejection message', async () => {
-            await expect(graphServer.nodeExpansion(
-                mockNode, 
-                'OUTGOING', 
-                undefined, 
-                [{
-                    key: 'test_key',
-                    value: 'test-value',
-                    type: 'INVALID'
-                }]
-            )).rejects.toThrow(/Allowed types are: BOOL, BYTES, DATE, ENUM, INT64, NUMERIC, FLOAT32, FLOAT64, STRING, TIMESTAMP/);
         });
     });
 

@@ -619,7 +619,7 @@ class GraphStore {
      * @param {string|undefined} edgeLabel
      */
     requestNodeExpansion(node, direction, edgeLabel) {
-        const properties = node.key_property_names.map(propertyName => ({
+        const properties = Object.keys(node.properties).map(propertyName => ({
             key: propertyName,
             value: node.properties[propertyName],
             type: this.getPropertyType(node, propertyName)

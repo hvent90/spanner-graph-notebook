@@ -115,7 +115,7 @@ def execute_node_expansion(
         GRAPH {graph}
         LET uid = "{uid}"
         MATCH (n{node_label_str})
-        WHERE {' and '.join(node_property_strings)} and STRING(TO_JSON(n).identifier) = uid
+        WHERE {' and '.join(node_property_strings)} {'and' if node_property_strings else ''} STRING(TO_JSON(n).identifier) = uid
         RETURN n
 
         NEXT
@@ -260,7 +260,7 @@ class GraphServerHandler(http.server.SimpleHTTPRequestHandler):
 
     def handle_post_node_expansion(self):
         data = self.parse_post_data()
-        required_fields = ["project", "instance", "database", "graph", "uid", "node_labels", "node_properties", "direction"]
+        required_fields = ["project", "instance", "database", "graph", "uid", "node_labels", "direction"]
         missing_fields = [field for field in required_fields if data.get(field) is None]
         
         if missing_fields:
@@ -273,7 +273,7 @@ class GraphServerHandler(http.server.SimpleHTTPRequestHandler):
         graph = data.get("graph")
         uid = data.get("uid")
         node_labels = data.get("node_labels")
-        node_properties = data.get("node_properties")
+        node_properties = data.get("node_properties", [])
         edge_label = data.get("edge_label")
 
         # Validate node_labels
