@@ -155,7 +155,7 @@ class GraphConfig {
      */
     neighborsOfNode = {}
     /**
-     * Set of edges pertaining to a specific node
+     * Set of edges pertaining to a specific node, both incoming and outgoing.
      * @type {Object.<GraphObjectUID, Set<Edge>>}
      */
     edgesOfNode = {}
