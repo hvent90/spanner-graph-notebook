@@ -37,7 +37,6 @@ class GraphServer {
         'BOOL',
         'BYTES',
         'DATE',
-        'ENUM',
         'INT64',
         'NUMERIC',
         'FLOAT32',

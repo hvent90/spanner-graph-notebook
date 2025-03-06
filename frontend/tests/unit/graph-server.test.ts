@@ -184,7 +184,7 @@ describe('GraphServer', () => {
         });
 
         it('should accept lowercase valid property types', async () => {
-            const validTypes = ['int64', 'string', 'float64', 'timestamp', 'bytes', 'date', 'enum', 'numeric', 'float32'];
+            const validTypes = ['int64', 'string', 'float64', 'timestamp', 'bytes', 'date', 'numeric', 'float32'];
             
             for (const type of validTypes) {
                 const property = {
@@ -214,6 +214,7 @@ describe('GraphServer', () => {
             const invalidTypes = [
                 'TYPE_CODE_UNSPECIFIED',
                 'ARRAY',
+                'ENUM',
                 'STRUCT',
                 'JSON',
                 'PROTO',
