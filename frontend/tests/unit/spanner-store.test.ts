@@ -871,4 +871,58 @@ describe('GraphStore', () => {
             expect(store.getNodeCount()).toBe(3);
         });
     });
+
+    it('should sort edge types correctly with getEdgeTypesOfNodeSorted', () => {
+        const mockSchema = {
+            nodeTables: [
+                {
+                    name: 'Person',
+                    labelNames: ['Person']
+                }
+            ],
+            edgeTables: [
+                {
+                    sourceNodeTable: { nodeTableName: 'Person' },
+                    destinationNodeTable: { nodeTableName: 'OtherTable' },
+                    labelNames: ['KNOWS', 'CREATED']
+                },
+                {
+                    sourceNodeTable: { nodeTableName: 'OtherTable' },
+                    destinationNodeTable: { nodeTableName: 'Person' },
+                    labelNames: ['FOLLOWS', 'BELONGS_TO']
+                }
+            ]
+        };
+
+        const nodeData = { identifier: 'person1', labels: ['Person'] };
+
+        const testConfig = new GraphConfig({
+            nodesData: [nodeData],
+            edgesData: [],
+            colorScheme: GraphConfig.ColorScheme.LABEL,
+            rowsData: [],
+            schemaData: mockSchema
+        });
+
+        const store = new GraphStore(testConfig);
+        const node = testConfig.nodes[nodeData.identifier];
+
+        const sortedEdgeTypes = store.getEdgeTypesOfNodeSorted(node);
+
+        expect(sortedEdgeTypes.length).toBe(4);
+
+        expect(sortedEdgeTypes[0].direction).toBe('INCOMING');
+        expect(sortedEdgeTypes[1].direction).toBe('INCOMING');
+        expect(sortedEdgeTypes[0].label).toBe('BELONGS_TO');
+        expect(sortedEdgeTypes[1].label).toBe('FOLLOWS');
+
+        expect(sortedEdgeTypes[2].direction).toBe('OUTGOING');
+        expect(sortedEdgeTypes[3].direction).toBe('OUTGOING');
+        expect(sortedEdgeTypes[2].label).toBe('CREATED');
+        expect(sortedEdgeTypes[3].label).toBe('KNOWS');
+
+        expect(store.getEdgeTypesOfNodeSorted(null)).toEqual([]);
+        expect(store.getEdgeTypesOfNodeSorted(undefined)).toEqual([]);
+        expect(store.getEdgeTypesOfNodeSorted({} as any)).toEqual([]);
+    });
 });

@@ -282,9 +282,13 @@ class GraphStore {
      * @returns {Array<{label: string, direction: ("INCOMING"|"OUTGOING")}>}
      */
     getEdgeTypesOfNodeSorted(node) {
-        return this.getEdgeTypesOfNode(node)
-            .sort((a, b) => a.label < b.label)
-            .sort((a, b) => a.direction === 'OUTGOING');
+        return this.getEdgeTypesOfNode(node).sort((a, b) => {
+           if (a.direction !== b.direction) {
+               return a.direction === 'INCOMING' ? -1 : 1;
+           }
+
+           return a.label.localeCompare(b.label);
+        });
     }
 
     /**
