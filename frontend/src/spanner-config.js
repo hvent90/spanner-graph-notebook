@@ -265,7 +265,6 @@ class GraphConfig {
                     labels: nodeTable.labelNames,
                     properties: this.schema.getPropertiesOfTable(nodeTable),
                     color: 'rgb(0, 0, 100)', // this isn't used
-                    key_property_names: ['id'],
                     identifier: this.schema.getNodeTableId(nodeTable).toString()
                 };
             }
@@ -290,7 +289,6 @@ class GraphConfig {
                     color: 'rgb(0, 0, 100)', // this isn't used
                     destination_node_identifier: this.schema.getNodeTableId(connectedNodes.to).toString(),
                     source_node_identifier: this.schema.getNodeTableId(connectedNodes.from).toString(),
-                    key_property_names: ['id'],
                     identifier: this.schema.getEdgeTableId(edgeTable).toString()
                 };
         });
