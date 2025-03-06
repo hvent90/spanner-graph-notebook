@@ -45,6 +45,6 @@ describe('Graph Object', () => {
             labels: ['foo', 'bar'], properties: [], identifier: '1'
         });
 
-        expect(graphObject.getDisplayName()).toBe('foo | bar');
+        expect(graphObject.getLabels()).toBe('foo | bar');
     });
 });

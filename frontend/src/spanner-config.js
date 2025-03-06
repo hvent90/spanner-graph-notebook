@@ -211,7 +211,7 @@ class GraphConfig {
                 continue;
             }
 
-            labels.add(node.getDisplayName());
+            labels.add(node.getLabels());
         }
 
         for (const uid of Object.keys(this.schemaNodes)) {
@@ -220,7 +220,7 @@ class GraphConfig {
                 continue;
             }
 
-            labels.add(node.getDisplayName());
+            labels.add(node.getLabels());
         }
 
         for (const label of labels) {

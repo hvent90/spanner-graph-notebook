@@ -1108,7 +1108,7 @@ class GraphVisualization {
                             return;
                         }
 
-                        let label = node.getDisplayName();
+                        let label = node.getLabels();
                         if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT && node.identifiers.length > 0) {
                             label += ` (${node.identifiers.join(', ')})`;
                         }
@@ -1169,7 +1169,7 @@ class GraphVisualization {
                             ctx.fillStyle = '#fff';
 
                             // 1. First, handle the regular font part ("NodeType ")
-                            const prefixLabel = `${node.getDisplayName()} `;
+                            const prefixLabel = `${node.getLabels()} `;
                             ctx.font = `${fontSize}px 'Google Sans', Roboto, Arial, sans-serif`;
                             const prefixRect = ctx.measureText(prefixLabel);
 
@@ -1205,7 +1205,7 @@ class GraphVisualization {
         }
         let content = `
             <div class="graph-element-tooltip" style="background-color: ${color}">
-                <div><strong>${this.sanitize(element.getDisplayName())}</strong></div>`;
+                <div><strong>${this.sanitize(element.getLabels())}</strong></div>`;
 
         if (element.properties) {
             if (element.key_property_names.length === 1) {
@@ -1359,7 +1359,7 @@ class GraphVisualization {
                         if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
 
                         // Calculate font size based on link length
-                        let label = link.getDisplayName();
+                        let label = link.getLabels();
                         let labelTail = '';
 
                         let maxTextLength = 50;

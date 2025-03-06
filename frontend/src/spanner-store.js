@@ -451,7 +451,7 @@ class GraphStore {
             return defaultColor;
         }
 
-        const nodeColor = this.config.nodeColors[node.getDisplayName()];
+        const nodeColor = this.config.nodeColors[node.getLabels()];
         if (nodeColor) {
             return nodeColor;
         }
