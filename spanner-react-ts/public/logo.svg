@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Spanner Graph Logo</title>
+    <g id="Logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle id="Node1" fill="#FFFFFF" cx="8" cy="8" r="4"></circle>
+        <circle id="Node2" fill="#FFFFFF" cx="24" cy="8" r="4"></circle>
+        <circle id="Node3" fill="#FFFFFF" cx="16" cy="24" r="4"></circle>
+        <line id="Edge1" stroke="#FFFFFF" stroke-width="2" x1="8" y1="8" x2="24" y2="8"></line>
+        <line id="Edge2" stroke="#FFFFFF" stroke-width="2" x1="8" y1="8" x2="16" y2="24"></line>
+        <line id="Edge3" stroke="#FFFFFF" stroke-width="2" x1="24" y1="8" x2="16" y2="24"></line>
+    </g>
+</svg> 
