@@ -79,10 +79,6 @@ class GraphServer {
      * @param {{key: string, value: string|number, type: PropertyDeclarationType}[]} properties
      */
     nodeExpansion(node, direction, edgeLabel, properties) {
-        if (!node.identifiers.length || !node.key_property_names.length) {
-            return Promise.reject(new Error('Node does not have an identifier'));
-        }
-
         if (!node.uid) {
             return Promise.reject(new Error('Node does not have a UID'));
         }

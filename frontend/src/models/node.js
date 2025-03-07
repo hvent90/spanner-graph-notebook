@@ -74,10 +74,9 @@ class Node extends GraphObject {
         // Parse the human-readable unique identifiers that
         // distinguishes a node from its peers
         if (typeof properties === 'object' && Array.isArray(key_property_names)) {
-            for (let i = 0; i < key_property_names.length; i++) {
-                const identifier = properties[key_property_names[i]];
-                if (identifier) {
-                    this.identifiers.push(identifier);
+            for (const propertyName of key_property_names) {
+                if (propertyName in properties) {
+                    this.identifiers.push(properties[propertyName]);
                 }
             }
         }
