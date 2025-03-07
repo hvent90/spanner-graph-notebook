@@ -40,5 +40,21 @@ describe('Node', () => {
             const graphNode = new GraphNode(validNodeData);
             expect(graphNode.identifiers).toEqual(['Node Name', 'example']);
         });
+
+        it('should handle property names that fail truthiness checks', () => {
+            const nodeWithFalsyPropertyName = {
+                labels: ['Test Node'],
+                properties: {
+                    '0': 'foo',
+                    'false': 'boolean',
+                    '0.0': 'zero'
+                },
+                key_property_names: ['0', 'false', '0.0'],
+                identifier: '2',
+            };
+            
+            const graphNode = new GraphNode(nodeWithFalsyPropertyName);
+            expect(graphNode.identifiers).toEqual(['foo', 'boolean', 'zero']);
+        });
     });
 });
