@@ -82,5 +82,32 @@ class TestSpannerServer(unittest.TestCase):
         self.assertIn("source_node_identifier", edge)
         self.assertIn("destination_node_identifier", edge)
 
+    def test_node_expansion_error_handling(self):
+        """Test that errors in node expansion are properly handled and returned."""
+        # Build the request URL
+        route = GraphServer.build_route(GraphServer.endpoints["post_node_expansion"])
+        
+        # Create request data with invalid fields to trigger validation error
+        request_data = {
+            "project": "test-project",
+            "instance": "test-instance",
+            "database": "test-database",
+            "graph": "test-graph",
+            "uid": "test-uid",
+            # Missing required node_labels field
+            "direction": "INVALID_DIRECTION"  # Invalid direction
+        }
+
+        # Send POST request
+        response = requests.post(route, json=request_data)
+        
+        # Verify response
+        self.assertEqual(response.status_code, 200)  # Server still returns 200 but with error data
+        response_data = response.json()
+        
+        # Check error presence
+        self.assertIn("error", response_data)
+        self.assertIsNotNone(response_data["error"])
+
 if __name__ == '__main__':
     unittest.main()

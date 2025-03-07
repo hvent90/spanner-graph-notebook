@@ -35,8 +35,8 @@ from jinja2 import Template
 
 from spanner_graphs.database import get_database_instance
 from spanner_graphs.graph_server import (
-    GraphServer, execute_query, execute_node_expansion, 
-    EdgeDirection, validate_property_type
+    GraphServer, execute_query, execute_node_expansion,
+    validate_node_expansion_request
 )
 from spanner_graphs.graph_visualization import generate_visualization_html
 
@@ -92,21 +92,32 @@ def receive_query_request(query: str, params: str):
                               query=query,
                               mock=params_dict["mock"]))
 
-def receive_node_expansion_request(request: dict, params: str):
+def receive_node_expansion_request(data: dict, params: str):
     """Handle node expansion requests in Google Colab environment"""
-    params_dict = json.loads(params)
-    return JSON(execute_node_expansion(
-        project=params_dict["project"],
-        instance=params_dict["instance"],
-        database=params_dict["database"],
-        graph=params_dict["graph"],
-        uid=request["uid"],
-        node_key_property_name=request["node_key_property_name"],
-        node_key_property_value=request["node_key_property_value"],
-        direction=EdgeDirection(request["direction"]),
-        edge_label=request.get("edge_label"),
-        property_type=validate_property_type(request["node_key_property_type"])
-    ))
+    try:
+        params_dict = json.loads(params)
+        node_properties, direction = validate_node_expansion_request(data)
+        project = params_dict.get("project")
+        instance = params_dict.get("instance")
+        database = params_dict.get("database")
+        graph = params_dict.get("graph")
+        uid = data.get("uid")
+        node_labels = data.get("node_labels")
+        edge_label = data.get("edge_label")
+
+        return JSON(execute_node_expansion(
+            project=project,
+            instance=instance,
+            database=database,
+            node_labels=node_labels,
+            node_properties=node_properties,
+            graph=graph,
+            uid=uid,
+            direction=direction,
+            edge_label=edge_label,
+        ))
+    except BaseException as e:
+        return JSON({"error": e})
 
 @magics_class
 class NetworkVisualizationMagics(Magics):
