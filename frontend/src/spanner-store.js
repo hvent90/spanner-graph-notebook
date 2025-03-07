@@ -263,7 +263,7 @@ class GraphStore {
      * @returns {Set<Edge>} A set of edges associated with the node.
      */
     getEdgesOfNode(node) {
-        if (!node || !node instanceof Node) {
+        if (!node || !(node instanceof Node)) {
             return new Set();
         }
 
