@@ -42,7 +42,7 @@ PROPERTY_TYPE_MAP = {
     'TIMESTAMP': TypeCode.TIMESTAMP
 }
 
-class NodeProperty:
+class NodePropertyForDataExploration:
     def __init__(self, key: str, value: Union[str, int, float, bool], type: TypeCode):
         self.key = key
         self.value = value
@@ -79,7 +79,7 @@ def validate_property_type(property_type: str) -> TypeCode:
     
     return PROPERTY_TYPE_MAP[property_type]
 
-def validate_node_expansion_request(data) -> (list[NodeProperty], EdgeDirection):
+def validate_node_expansion_request(data) -> (list[NodePropertyForDataExploration], EdgeDirection):
     required_fields = ["project", "instance", "database", "graph", "uid", "node_labels", "direction"]
     missing_fields = [field for field in required_fields if data.get(field) is None]
 
@@ -101,7 +101,7 @@ def validate_node_expansion_request(data) -> (list[NodeProperty], EdgeDirection)
     if not isinstance(node_properties, list):
         raise ValueError("node_properties must be an array")
 
-    validated_properties: list[NodeProperty] = []
+    validated_properties: list[NodePropertyForDataExploration] = []
     for idx, prop in enumerate(node_properties):
         if not isinstance(prop, dict):
             raise ValueError(f"Property at index {idx} must be an object")
@@ -128,7 +128,7 @@ def validate_node_expansion_request(data) -> (list[NodeProperty], EdgeDirection)
                     if not isinstance(value, bool) and not (isinstance(value, str) and value.lower() in ["true", "false"]):
                         raise ValueError(f"Property '{prop['key']}' value must be a boolean for type {prop_type_str}")
 
-                validated_properties.append(NodeProperty(
+                validated_properties.append(NodePropertyForDataExploration(
                     key=prop["key"],
                     value=prop["value"],
                     type=prop_type
@@ -146,15 +146,28 @@ def validate_node_expansion_request(data) -> (list[NodeProperty], EdgeDirection)
     return validated_properties, direction
 
 def execute_node_expansion(
-    project: str,
-    instance: str,
-    database: str,
-    node_labels: list[str],
-    node_properties: list[NodeProperty],
-    graph: str,
-    uid: str,
-    direction: EdgeDirection,
-    edge_label: str = None):
+    params_str: str,
+    request: dict) -> dict:
+    """Execute a node expansion query to find connected nodes and edges.
+    
+    Args:
+        params_str: A JSON string containing connection parameters (project, instance, database, graph, mock).
+        request: A dictionary containing node expansion request details (uid, node_labels, node_properties, direction, edge_label).
+    
+    Returns:
+        dict: A dictionary containing the query response with nodes and edges.
+    """
+
+    params = json.loads(params_str)
+    node_properties, direction = validate_node_expansion_request(params | request)
+
+    project = params.get("project")
+    instance = params.get("instance")
+    database = params.get("database")
+    graph = params.get("graph")
+    uid = request.get("uid")
+    node_labels = request.get("node_labels")
+    edge_label = request.get("edge_label")
 
     edge = "e" if not edge_label else f"e:{edge_label}"
 
@@ -328,28 +341,21 @@ class GraphServerHandler(http.server.SimpleHTTPRequestHandler):
         self.do_data_response(response)
 
     def handle_post_node_expansion(self):
+        """Handle POST requests for node expansion.
+        
+        Expects a JSON payload with:
+        - params: A JSON string containing connection parameters (project, instance, database, graph)
+        - request: A dictionary with node details (uid, node_labels, node_properties, direction, edge_label)
+        """
         try:
             data = self.parse_post_data()
-            node_properties, direction = validate_node_expansion_request(data)
 
-            project = data.get("project")
-            instance = data.get("instance")
-            database = data.get("database")
-            graph = data.get("graph")
-            uid = data.get("uid")
-            node_labels = data.get("node_labels")
-            edge_label = data.get("edge_label")
-
+            # Execute node expansion with:
+            # - params_str: JSON string with connection parameters (project, instance, database, graph)
+            # - request: Dict with node details (uid, node_labels, node_properties, direction, edge_label)
             self.do_data_response(execute_node_expansion(
-                project=project,
-                instance=instance,
-                database=database,
-                node_labels=node_labels,
-                node_properties=node_properties,
-                graph=graph,
-                uid=uid,
-                direction=direction,
-                edge_label=edge_label,
+                params_str=data.get("params"),  # type: str - JSON string with connection parameters
+                request=data.get("request")     # type: dict - Node expansion request details
             ))
         except BaseException as e:
             self.do_error_response(e)

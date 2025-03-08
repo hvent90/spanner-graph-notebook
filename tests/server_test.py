@@ -14,6 +14,7 @@
 
 import unittest
 import requests
+import json
 from spanner_graphs.graph_server import GraphServer
 
 class TestSpannerServer(unittest.TestCase):
@@ -39,13 +40,17 @@ class TestSpannerServer(unittest.TestCase):
         # Build the request URL
         route = GraphServer.build_route(GraphServer.endpoints["post_query"])
         
-        # Create request data
-        request_data = {
+        # Create request data with the new structure
+        params = json.dumps({
             "project": "test-project",
             "instance": "test-instance",
             "database": "test-database",
-            "query": "GRAPH TestGraph MATCH (n) RETURN n",
             "mock": True
+        })
+        
+        request_data = {
+            "params": params,
+            "query": "GRAPH TestGraph MATCH (n) RETURN n"
         }
 
         # Send POST request

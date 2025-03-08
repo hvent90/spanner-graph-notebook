@@ -92,30 +92,30 @@ def receive_query_request(query: str, params: str):
                               query=query,
                               mock=params_dict["mock"]))
 
-def receive_node_expansion_request(data: dict, params: str):
-    """Handle node expansion requests in Google Colab environment"""
+def receive_node_expansion_request(request: dict, params_str: str):
+    """Handle node expansion requests in Google Colab environment
+    
+    Args:
+        request: A dictionary containing node expansion details including:
+            - uid: str - Unique identifier of the node to expand
+            - node_labels: List[str] - Labels of the node
+            - node_properties: List[Dict] - Properties of the node with key, value, and type
+            - direction: str - Direction of expansion ("INCOMING" or "OUTGOING")
+            - edge_label: Optional[str] - Label of edges to filter by
+        params_str: A JSON string containing connection parameters:
+            - project: str - GCP project ID
+            - instance: str - Spanner instance ID
+            - database: str - Spanner database ID
+            - graph: str - Graph name
+            - mock: bool - Whether to use mock data
+    
+    Returns:
+        JSON: A JSON-serialized response containing either:
+            - The query results with nodes and edges
+            - An error message if the request failed
+    """
     try:
-        params_dict = json.loads(params)
-        node_properties, direction = validate_node_expansion_request(data)
-        project = params_dict.get("project")
-        instance = params_dict.get("instance")
-        database = params_dict.get("database")
-        graph = params_dict.get("graph")
-        uid = data.get("uid")
-        node_labels = data.get("node_labels")
-        edge_label = data.get("edge_label")
-
-        return JSON(execute_node_expansion(
-            project=project,
-            instance=instance,
-            database=database,
-            node_labels=node_labels,
-            node_properties=node_properties,
-            graph=graph,
-            uid=uid,
-            direction=direction,
-            edge_label=edge_label,
-        ))
+        return JSON(execute_node_expansion(params_str, request))
     except BaseException as e:
         return JSON({"error": e})
 

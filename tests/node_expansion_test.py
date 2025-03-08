@@ -58,11 +58,8 @@ class TestNodeExpansion(unittest.TestCase):
         # Call the function
         result = receive_node_expansion_request(request, params)
         
-        # Verify validate_node_expansion_request was called
-        mock_validate.assert_called_once_with(request)
-        
         # Verify execute_node_expansion was called with correct parameters
-        mock_execute.assert_called_once()
+        mock_execute.assert_called_once_with(params, request)
         
         # Verify the result is wrapped in JSON
         self.assertEqual(result.data, mock_execute.return_value)
@@ -102,11 +99,8 @@ class TestNodeExpansion(unittest.TestCase):
         # Call the function
         result = receive_node_expansion_request(request, params)
         
-        # Verify validate_node_expansion_request was called
-        mock_validate.assert_called_once_with(request)
-        
         # Verify execute_node_expansion was called with correct parameters
-        mock_execute.assert_called_once()
+        mock_execute.assert_called_once_with(params, request)
         
         # Verify the result is wrapped in JSON
         self.assertEqual(result.data, mock_execute.return_value)
