@@ -354,8 +354,8 @@ class GraphServerHandler(http.server.SimpleHTTPRequestHandler):
             # - params_str: JSON string with connection parameters (project, instance, database, graph)
             # - request: Dict with node details (uid, node_labels, node_properties, direction, edge_label)
             self.do_data_response(execute_node_expansion(
-                params_str=data.get("params"),  # type: str - JSON string with connection parameters
-                request=data.get("request")     # type: dict - Node expansion request details
+                params_str=data.get("params"),
+                request=data.get("request")
             ))
         except BaseException as e:
             self.do_error_response(e)
