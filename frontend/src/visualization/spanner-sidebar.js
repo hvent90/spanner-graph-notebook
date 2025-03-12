@@ -43,6 +43,8 @@ class SidebarConstructor {
 
     outgoingEdgeSvg = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M640-320q66 0 113-47t47-113q0-66-47-113t-113-47q-66 0-113 47t-47 113q0 66 47 113t113 47Zm0 80q-90 0-156.5-57T403-440H80v-80h323q14-86 80.5-143T640-720q100 0 170 70t70 170q0 100-70 170t-170 70Zm0-240Z"/></svg>`;
 
+    overflowSvg = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg>`;
+
     /**
      *
      * @type {GraphStore}
@@ -127,7 +129,7 @@ class SidebarConstructor {
      */
     _initCloseButton() {
         const button = document.createElement('button');
-        button.className = 'close-btn';
+        button.className = 'close-btn circular-hover-effect';
 
         button.innerHTML = this.closeSvg;
         button.addEventListener('click', () => {
@@ -136,6 +138,41 @@ class SidebarConstructor {
 
         return button;
     }
+
+    /**
+     *
+     * @return {HTMLButtonElement} button
+     * @private
+     */
+    _initOverflowButton() {
+        const button = document.createElement('button');
+        button.className = 'overflow-btn circular-hover-effect';
+        button.innerHTML = this.overflowSvg;
+
+        button.addEventListener('click', () => {
+            const selectedNode = this.store.config.selectedGraphObject;
+            if (selectedNode instanceof Node) {
+                const menu = this.store.createNodeExpansionMenu(selectedNode, (direction, edgeLabel) => {
+                    // Fix node position during expansion
+                    selectedNode.fx = selectedNode.x;
+                    selectedNode.fy = selectedNode.y;
+
+                    this.store.requestNodeExpansion(selectedNode, direction, edgeLabel);
+                });
+
+                // Position the menu below the button
+                const buttonRect = button.getBoundingClientRect();
+                menu.style.left = buttonRect.left + 'px';
+                menu.style.top = buttonRect.bottom + 'px';
+
+                // Add the menu to the document body
+                document.body.appendChild(menu);
+            }
+        });
+
+        return button;
+    }
+
 
     /**
      *
@@ -193,7 +230,11 @@ class SidebarConstructor {
             /**
              * @type {HTMLButtonElement}
              */
-            button: null,
+            closeButton: null,
+            /**
+             * @type {HTMLButtonElement}
+             */
+            overflowButton: null,
             /**
              * @type {SVGSVGElement}
              */
@@ -319,6 +360,13 @@ class SidebarConstructor {
                     border-bottom: 1px solid #DADCE0;
                 }
                 
+                .panel-header-buttons {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-left: auto;
+                }
+                
                 .schema-header {
                     padding: 16px 16px 10px 16px;
                     display: flex;
@@ -394,7 +442,7 @@ class SidebarConstructor {
                     font-weight: normal;
                 }
     
-                .close-btn, .collapse-btn {
+                .close-btn, .collapse-btn, .overflow-btn {
                     background: none;
                     border: none;
                     color: #666;
@@ -687,6 +735,16 @@ class SidebarConstructor {
                     height: 1px;
                     background-color: #DADCE0;
                 }
+
+                /* Circular hover effect class */
+                .circular-hover-effect {
+                    border-radius: 50%;
+                    transition: background-color 0.2s ease;
+                }
+                
+                .circular-hover-effect:hover {
+                    background-color: rgba(95, 99, 104, 0.1);
+                }
             </style>
             <div class="panel">
                 <div class="panel-header"></div>
@@ -698,7 +756,8 @@ class SidebarConstructor {
         this.elements.title.container = this.elements.container.querySelector('.panel-header');
         this.elements.title.content = document.createElement('span');
         this.elements.title.content.className = 'panel-header-content';
-        this.elements.title.button = document.createElement('button');
+        this.elements.title.closeButton = document.createElement('button');
+        this.elements.title.overflowButton = document.createElement('button');
         this.elements.properties.container = document.createElement('div');
         this.elements.schemaChipLists.nodeList.container = document.createElement('div');
         this.elements.schemaChipLists.edgeList.container = document.createElement('div');
@@ -707,7 +766,16 @@ class SidebarConstructor {
     title() {
         const selectedObject = this.store.config.selectedGraphObject;
         const {container, content} = this.elements.title;
-        let button = this.elements.title.button;
+        let closeButton = this.elements.title.closeButton;
+        let overflowButton = this.elements.title.overflowButton;
+
+        // Clear the container first
+        container.innerHTML = '';
+
+        // Create a container for the buttons
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'panel-header-buttons';
+
         container.appendChild(content);
 
         const selectedObjectTitle = () => {
@@ -728,7 +796,8 @@ class SidebarConstructor {
                 content.appendChild(this._edgeChipHtml(selectedObject));
             }
 
-            button = this._initCloseButton();
+            closeButton = this._initCloseButton();
+            overflowButton = this._initOverflowButton();
         };
 
         const schemaTitle = () => {
@@ -738,7 +807,7 @@ class SidebarConstructor {
             content.classList.add('schema-header-content');
             container.style.borderBottom = 'none';
 
-            button = this._initToggleButton([
+            closeButton = this._initToggleButton([
                 this.elements.content
             ], 'block');
         };
@@ -751,7 +820,16 @@ class SidebarConstructor {
             schemaTitle();
         }
 
-        container.appendChild(button);
+        // Add buttons to the buttons container
+        if (overflowButton) {
+            buttonsContainer.appendChild(overflowButton);
+        }
+        if (closeButton) {
+            buttonsContainer.appendChild(closeButton);
+        }
+
+        // Add the buttons container to the main container
+        container.appendChild(buttonsContainer);
     }
 
     /**
