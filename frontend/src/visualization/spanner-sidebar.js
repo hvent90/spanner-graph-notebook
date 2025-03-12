@@ -439,7 +439,7 @@ class SidebarConstructor {
                     font-weight: normal;
                 }
     
-                .close-btn, .collapse-btn, .overflow-btn {
+                .close-btn, .collapse-btn, .overflow-btn, .edge-direction-btn {
                     background: none;
                     border: none;
                     color: #666;
@@ -447,6 +447,15 @@ class SidebarConstructor {
                     cursor: pointer;
                     padding: 0;
                     height: 24px;
+                }
+                
+                .edge-direction-btn {
+                    height: auto;
+                    font-size: initial;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 2px;
                 }
     
                 .panel-content {
@@ -472,13 +481,6 @@ class SidebarConstructor {
                     font-size: 14px;
                     font-weight: 600;
                     color: #333;
-                }
-    
-                .arrow {
-                    font-size: 12px;
-                    color: #666;
-                    display: flex;
-                    padding-right: 6px;
                 }
     
                 .section-content {
@@ -625,24 +627,6 @@ class SidebarConstructor {
                     font-size: 13px;
                 }
     
-                .neighbor-arrow {
-                    height: 24px;
-                    padding: 0;
-                    border-radius: 4px;
-                    margin-right: 8px;
-                    
-                    display: flex;
-                    flex: ;
-                }
-                
-                .neighbor-arrow.left {
-                    justify-content: flex-start;
-                }
-                
-                .neighbor-arrow.right {
-                    justify-content: flex-end;
-                }
-                
                 .chip-wrap-container {
                     display: flex;
                     flex-wrap: wrap;
@@ -657,6 +641,30 @@ class SidebarConstructor {
                 
                 .circular-hover-effect:hover {
                     background-color: rgba(95, 99, 104, 0.1);
+                }
+                
+                /* Tooltip styling */
+                .edge-direction-btn[title] {
+                    position: relative;
+                }
+                
+                .edge-direction-btn[title]:hover::after {
+                    content: attr(title);
+                    position: absolute;
+                    bottom: 100%;
+                    left: 0;
+                    width: max-content;
+                    max-width: 300px;
+                    padding: 6px 10px;
+                    background-color: #3b4043;
+                    color: white;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    white-space: normal;
+                    word-wrap: break-word;
+                    z-index: 10;
+                    pointer-events: none;
+                    text-align: left;
                 }
             </style>
             <div class="panel">
@@ -883,11 +891,21 @@ class SidebarConstructor {
                     this.store.setSelectedObject(node);
                 });
 
-                const arrowSpan = document.createElement('span');
-                arrowSpan.className = 'arrow';
-                arrowSpan.innerHTML = edge.sourceUid === selectedObject ?
+                const edgeDirectionIcon = document.createElement('button');
+                edgeDirectionIcon.className = 'edge-direction-btn circular-hover-effect';
+                edgeDirectionIcon.innerHTML = edge.sourceUid === selectedObject.uid ?
                     this.outgoingEdgeSvg : this.incomingEdgeSvg;
-                neighborDiv.appendChild(arrowSpan);
+                
+                // Add tooltip logic
+                const isSource = edge.sourceUid === selectedObject.uid;
+                const tooltipText = isSource ? 
+                    `Destination edge: ${edge.getLabels()}` : 
+                    `Source edge: ${edge.getLabels()}`;
+                
+                // Set title attribute for the tooltip
+                edgeDirectionIcon.setAttribute('title', tooltipText);
+                
+                neighborDiv.appendChild(edgeDirectionIcon);
 
 
                 // Node Neighbor - now without its own click handlers since the parent handles it
@@ -939,7 +957,27 @@ class SidebarConstructor {
                 const label = document.createElement('div');
                 label.className = 'edge-neighbor-type';
                 label.textContent = neighborTypeLabel;
-                neighborRow.appendChild(label);
+                
+                // Add edge direction button for visual indication
+                const edgeDirectionIcon = document.createElement('button');
+                edgeDirectionIcon.className = 'edge-direction-btn circular-hover-effect';
+                edgeDirectionIcon.innerHTML = neighborType === 'target' ? 
+                    this.outgoingEdgeSvg : this.incomingEdgeSvg;
+                
+                // Add tooltip for the edge direction button
+                const tooltipText = neighborType === 'target' ? 
+                    `Destination edge: ${selectedObject.getLabels()}` : 
+                    `Source edge: ${selectedObject.getLabels()}`;
+                edgeDirectionIcon.setAttribute('title', tooltipText);
+                
+                // Add the direction icon before the label text
+                const labelContainer = document.createElement('div');
+                labelContainer.style.display = 'flex';
+                labelContainer.style.alignItems = 'center';
+                labelContainer.appendChild(edgeDirectionIcon);
+                labelContainer.appendChild(label);
+                
+                neighborRow.appendChild(labelContainer);
 
                 const value = document.createElement('div');
                 value.className = 'edge-neighbor-node';
