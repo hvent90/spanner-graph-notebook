@@ -320,9 +320,6 @@ class SidebarConstructor {
         if (this.store.config.selectedGraphObject) {
             if (this.store.config.selectedGraphObject instanceof GraphNode) {
                 this.properties();
-                if (!this.store.config.selectedGraphObject.isIntermediateNode()) {
-                    this.expandNode();
-                }
                 this.neighbors();
             } else {
                 this.neighbors();
@@ -652,90 +649,6 @@ class SidebarConstructor {
                     row-gap: 12px;
                 }
 
-                /* Expand button styles */
-                .expand-button {
-                    display: flex;
-                    align-items: center;
-                    padding: 8px 10px;
-                    margin: 2px 0;
-                    border: none;
-                    border-radius: 4px;
-                    background: none;
-                    cursor: pointer;
-                    width: 100%;
-                    font-size: 13px;
-                    color: #3C4043;
-                    transition: all 0.2s;
-                    position: relative;
-                    overflow: hidden;
-                }
-                .expand-button-general {
-                    font-weight: 500;
-                }
-                .expand-button:hover:not(.loading) {
-                    background-color: #F1F3F4;
-                }
-                .expand-button-general:hover:not(.loading) {
-                    background-color: #EBEEF0;
-                }
-                .expand-button.loading {
-                    background-color: #F8F9FA;
-                    cursor: default;
-                    color: #80868B;
-                }
-                .expand-button.loading svg {
-                    opacity: 0.5;
-                }
-                .expand-button svg {
-                    margin-right: 8px;
-                    transition: opacity 0.2s;
-                }
-                .expand-button-text {
-                    flex-grow: 1;
-                    text-align: left;
-                }
-                .expand-button-arrow {
-                    opacity: 0.6;
-                    transition: opacity 0.2s;
-                }
-                .expand-button:hover .expand-button-arrow {
-                    opacity: 1;
-                }
-                .expand-button.loading .expand-button-arrow {
-                    opacity: 0;
-                }
-                .expand-button::after {
-                    content: '';
-                    position: absolute;
-                    width: 100%;
-                    height: 2px;
-                    background: linear-gradient(90deg, 
-                        rgba(26, 115, 232, 0.2),
-                        rgba(26, 115, 232, 1),
-                        rgba(26, 115, 232, 1),
-                        rgba(26, 115, 232, 0.2)
-                    );
-                    bottom: 0;
-                    left: -100%;
-                    transition: none;
-                    opacity: 0;
-                }
-                .expand-button.loading::after {
-                    opacity: 1;
-                    animation: loading-animation 1s infinite linear;
-                    transition: opacity 0.2s;
-                }
-                @keyframes loading-animation {
-                    0% { left: -100%; }
-                    100% { left: 100%; }
-                }
-                
-                /* Expand divider style */
-                .expand-divider {
-                    height: 1px;
-                    background-color: #DADCE0;
-                }
-
                 /* Circular hover effect class */
                 .circular-hover-effect {
                     border-radius: 50%;
@@ -757,7 +670,6 @@ class SidebarConstructor {
         this.elements.title.content = document.createElement('span');
         this.elements.title.content.className = 'panel-header-content';
         this.elements.title.closeButton = document.createElement('button');
-        this.elements.title.overflowButton = document.createElement('button');
         this.elements.properties.container = document.createElement('div');
         this.elements.schemaChipLists.nodeList.container = document.createElement('div');
         this.elements.schemaChipLists.edgeList.container = document.createElement('div');
@@ -767,7 +679,7 @@ class SidebarConstructor {
         const selectedObject = this.store.config.selectedGraphObject;
         const {container, content} = this.elements.title;
         let closeButton = this.elements.title.closeButton;
-        let overflowButton = this.elements.title.overflowButton;
+        let overflowButton;
 
         // Clear the container first
         container.innerHTML = '';
@@ -783,6 +695,7 @@ class SidebarConstructor {
 
             if (selectedObject instanceof GraphNode) {
                 content.appendChild(this._nodeChipHtml(selectedObject));
+                overflowButton = this._initOverflowButton();
 
                 if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
                     const property = document.createElement('span');
@@ -797,7 +710,6 @@ class SidebarConstructor {
             }
 
             closeButton = this._initCloseButton();
-            overflowButton = this._initOverflowButton();
         };
 
         const schemaTitle = () => {
@@ -1109,100 +1021,6 @@ class SidebarConstructor {
 
         const edgeList = this._createSection('', [chipWrapContainer], false);
         this.elements.content.appendChild(edgeList.container);
-    }
-
-    expandNode() {
-        const selectedNode = this.store.config.selectedGraphObject;
-        if (!selectedNode || !(selectedNode instanceof GraphNode)) {
-            return;
-        }
-
-        // Don't show expand section in schema mode
-        if (this.store.config.viewMode === GraphConfig.ViewModes.SCHEMA) {
-            return;
-        }
-
-        // Create expand buttons container
-        const expandButtons = document.createElement('div');
-        expandButtons.className = 'section-content';
-
-        // Helper function to create expand buttons
-        const createExpandButton = (text, icon, onClick, isGeneral = false) => {
-            const button = document.createElement('button');
-            button.className = `expand-button ${isGeneral ? 'expand-button-general' : ''}`;
-            button.innerHTML = `
-                ${icon}
-                <span class="expand-button-text">${text}</span>
-                <svg class="expand-button-arrow" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#5f6368">
-                    <path d="M530-481 332-679l43-43 241 241-241 241-43-43 198-198Z"/>
-                </svg>
-            `;
-
-            // Track loading state
-            let isLoading = false;
-
-            button.addEventListener('click', async () => {
-                if (isLoading) return; // Prevent multiple clicks while loading
-                
-                // Set loading state
-                isLoading = true;
-                button.classList.add('loading');
-                
-                try {
-                    // Call the expansion function
-                    selectedNode.fx = selectedNode.x;
-                    selectedNode.fy = selectedNode.y;
-                    await onClick();
-                } catch (error) {
-                    console.error('Error expanding node:', error);
-                } finally {
-                    // Reset loading state after a minimum duration to prevent flashing
-                    setTimeout(() => {
-                        isLoading = false;
-                        button.classList.remove('loading');
-                    }, 500);
-                }
-            });
-            
-            return button;
-        };
-
-        // Add "All incoming edges" button
-        expandButtons.appendChild(createExpandButton(
-            'All incoming edges',
-            this.incomingEdgeSvg,
-            () => this.store.requestNodeExpansion(selectedNode, GraphEdge.Direction.INCOMING.description),
-            true
-        ));
-
-        // Add "All outgoing edges" button
-        expandButtons.appendChild(createExpandButton(
-            'All outgoing edges',
-            this.outgoingEdgeSvg,
-            () => this.store.requestNodeExpansion(selectedNode, GraphEdge.Direction.OUTGOING.description),
-            true
-        ));
-
-        // Add a divider between general and specific edge options
-        const divider = document.createElement('div');
-        divider.className = 'expand-divider';
-        expandButtons.appendChild(divider);
-
-        // Add individual edge type buttons
-        const edgeTypes = this.store.getEdgeTypesOfNodeSorted(selectedNode);
-        edgeTypes.forEach(({label, direction}) => {
-            const icon = direction === GraphEdge.Direction.INCOMING.description ? this.incomingEdgeSvg : this.outgoingEdgeSvg;
-            expandButtons.appendChild(createExpandButton(
-                label,
-                icon,
-                () => this.store.requestNodeExpansion(selectedNode, direction, label)
-            ));
-        });
-
-        // Create and add the section
-        const section = this._createSection('Expand Node', [expandButtons], true);
-        section.title.innerHTML = `Expand Node <span class="count">${2 + edgeTypes.length} options</span>`;
-        this.elements.content.appendChild(section.container);
     }
 }
 
