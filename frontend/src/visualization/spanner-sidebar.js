@@ -272,7 +272,7 @@ class SidebarConstructor {
 
         button.addEventListener('click', () => {
             const selectedNode = this.store.config.selectedGraphObject;
-            if (selectedNode instanceof Node) {
+            if (selectedNode instanceof GraphNode) {
                 const menu = this.store.createNodeExpansionMenu(selectedNode, (direction, edgeLabel) => {
                     // Fix node position during expansion
                     selectedNode.fx = selectedNode.x;
@@ -439,7 +439,7 @@ class SidebarConstructor {
         this.title();
 
         if (this.store.config.selectedGraphObject) {
-            if (this.store.config.selectedGraphObject instanceof GraphNode) {
+            if (this.store.config.selectedGraphObject instanceofGraphNode) {
                 this.properties();
                 this.neighbors();
             } else {
@@ -761,6 +761,13 @@ class SidebarConstructor {
                     cursor: pointer;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                }
+                
+                .schema-row .neighbor-column-left, .schema-row .neighbor-column-right {
+                    width: auto;
+                    overflow: initial;
+                    text-overflow: initial;
+                    cursor: initial;
                 }
                 
                 .neighbor-row-neighbor * {
@@ -1119,140 +1126,203 @@ class SidebarConstructor {
          * @type {HTMLElement[]}
          */
         const neighborRowElements = [];
+
         if (selectedObject instanceof GraphNode) {
-            const neighborMap = this.store.getNeighborsOfNode(selectedObject);
-            for (const nodeUid of Object.keys(neighborMap)) {
-                const node = this.store.getNode(nodeUid);
-                if (!(node instanceof GraphNode)) {
-                    continue;
-                }
+            const edges = this.store.getEdgesOfNodeSorted(selectedObject);
 
-                const edge = neighborMap[nodeUid];
-                if (!(edge instanceof GraphEdge)) {
-                    continue;
-                }
+            // When rendering neighbors of a node in the default graph,
+            // each row corresponds to a single edge. This means if the selected node
+            // has multiple edges connecting it to a single neighbor, there will be multiple
+            // rows for that particular neighbor.
+            if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
+                for (const edge of edges) {
+                    const node = this.store.getNode(edge.sourceUid === selectedObject.uid ? edge.destinationUid : edge.sourceUid);
+                    const neighborRowDiv = document.createElement('div');
+                    neighborRowDiv.className = 'neighbor-row';
 
-                const neighborRowDiv = document.createElement('div');
-                neighborRowDiv.className = 'neighbor-row';
+                    const leftColumn = document.createElement('div');
+                    leftColumn.className = 'neighbor-column-left';
 
-                const leftColumn = document.createElement('div');
-                leftColumn.className = 'neighbor-column-left';
+                    const rightColumn = document.createElement('div');
+                    rightColumn.className = 'neighbor-column-right';
 
-                const edgeDirectionIcon = document.createElement('button');
-                edgeDirectionIcon.className = 'edge-direction-btn circular-hover-effect';
-                edgeDirectionIcon.innerHTML = edge.sourceUid === selectedObject.uid ?
-                    this.outgoingEdgeSvg : this.incomingEdgeSvg;
-                
-                const isSource = edge.sourceUid === selectedObject.uid;
-                const tooltipText = isSource ? 
-                    `Destination edge: ${edge.getLabels()}` : 
-                    `Source edge: ${edge.getLabels()}`;
-                
-                this._createTooltip(edgeDirectionIcon, tooltipText);
+                    const edgeDirectionIcon = document.createElement('button');
+                    edgeDirectionIcon.className = 'edge-direction-btn circular-hover-effect';
+                    edgeDirectionIcon.innerHTML = edge.sourceUid === selectedObject.uid ?
+                        this.outgoingEdgeSvg : this.incomingEdgeSvg;
 
-                edgeDirectionIcon.addEventListener('mouseenter', () => {
-                    if (this.store.config.selectedGraphObject !== edge) {
-                        this.store.setFocusedObject(edge);
-                    }
-                });
-                edgeDirectionIcon.addEventListener('mouseleave', () => {
-                    this.store.setFocusedObject(null);
-                });
-                edgeDirectionIcon.addEventListener('click', () => {
-                    this.store.setFocusedObject(null);
-                    this.store.setSelectedObject(edge);
-                });
-                
-                leftColumn.appendChild(edgeDirectionIcon);
+                    const isSource = edge.sourceUid === selectedObject.uid;
+                    const tooltipText = isSource ?
+                        `Destination edge: ${edge.getLabels()}` :
+                        `Source edge: ${edge.getLabels()}`;
 
-                const nodeChip = this._nodeChipHtml(node, false);
-                leftColumn.appendChild(nodeChip);
+                    this._createTooltip(edgeDirectionIcon, tooltipText);
 
-                const rightColumn = document.createElement('div');
-                rightColumn.className = 'neighbor-column-right';
-                
-                rightColumn.addEventListener('mouseenter', () => {
-                    if (this.store.config.selectedGraphObject !== node) {
-                        this.store.setFocusedObject(node);
-                    }
-                });
-                rightColumn.addEventListener('mouseleave', () => {
-                    this.store.setFocusedObject(null);
-                });
-                rightColumn.addEventListener('click', () => {
-                    this.store.setFocusedObject(null);
-                    this.store.setSelectedObject(node);
-                });
+                    edgeDirectionIcon.addEventListener('mouseenter', () => {
+                        if (this.store.config.selectedGraphObject !== edge) {
+                            this.store.setFocusedObject(edge);
+                        }
+                    });
+                    edgeDirectionIcon.addEventListener('mouseleave', () => {
+                        this.store.setFocusedObject(null);
+                    });
+                    edgeDirectionIcon.addEventListener('click', () => {
+                        this.store.setFocusedObject(null);
+                        this.store.setSelectedObject(edge);
+                    });
 
-                for (const element of [nodeChip, rightColumn])
-                {
-                    element.addEventListener('mouseenter', () => {
+                    leftColumn.appendChild(edgeDirectionIcon);
+
+                    const nodeChip = this._nodeChipHtml(node, false);
+                    nodeChip.addEventListener('mouseenter', () => {
                         if (this.store.config.selectedGraphObject !== node) {
                             this.store.setFocusedObject(node);
                         }
                     });
-                    element.addEventListener('mouseleave', () => {
+                    nodeChip.addEventListener('mouseleave', () => {
                         this.store.setFocusedObject(null);
                     });
-                    element.addEventListener('click', () => {
+                    nodeChip.addEventListener('click', () => {
                         this.store.setFocusedObject(null);
                         this.store.setSelectedObject(node);
                     });
-                }
 
-                // Node Neighbor ID with background matching node color
-                if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
-                    const idContainer = document.createElement('span');
-                    idContainer.className = 'neighbor-id';
-                    const identifiersText = node.identifiers.join(', ');
-                    idContainer.textContent = identifiersText;
-                    
-                    // Set up the container to check for truncation and show tooltip if needed
-                    idContainer.addEventListener('mouseenter', () => {
-                        // Check if text is truncated (scrollWidth > clientWidth means text is truncated)
-                        if (idContainer.scrollWidth > idContainer.clientWidth) {
-                            // Text is truncated, show tooltip
-                            const tooltip = this._getTooltipElement();
-                            tooltip.textContent = identifiersText;
-                            tooltip.style.display = 'block';
-                            
-                            // Position the tooltip
-                            setTimeout(() => {
-                                const rect = idContainer.getBoundingClientRect();
-                                tooltip.style.left = `${rect.left}px`;
-                                tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
-                                
-                                // Make sure the tooltip doesn't go off-screen
-                                if (parseFloat(tooltip.style.left) < 5) {
-                                    tooltip.style.left = '5px';
-                                }
-                                
-                                const rightEdge = parseFloat(tooltip.style.left) + tooltip.offsetWidth;
-                                if (rightEdge > window.innerWidth - 5) {
-                                    tooltip.style.left = `${window.innerWidth - tooltip.offsetWidth - 5}px`;
-                                }
-                                
-                                if (parseFloat(tooltip.style.top) < 5) {
-                                    tooltip.style.top = `${rect.bottom + 5}px`;
-                                }
-                            }, 0);
+                    leftColumn.appendChild(nodeChip);
+                    rightColumn.addEventListener('mouseenter', () => {
+                        if (this.store.config.selectedGraphObject !== node) {
+                            this.store.setFocusedObject(node);
                         }
                     });
-                    
-                    idContainer.addEventListener('mouseleave', () => {
-                        let tooltip = document.getElementById('custom-tooltip');
-                        if (tooltip) {
-                            tooltip.style.display = 'none';
-                        }
+                    rightColumn.addEventListener('mouseleave', () => {
+                        this.store.setFocusedObject(null);
                     });
-                    
-                    rightColumn.appendChild(idContainer);
-                }
-                
-                neighborRowDiv.appendChild(leftColumn);
-                neighborRowDiv.appendChild(rightColumn);
+                    rightColumn.addEventListener('click', () => {
+                        this.store.setFocusedObject(null);
+                        this.store.setSelectedObject(node);
+                    });
 
-                neighborRowElements.push(neighborRowDiv);
+                    // Node Neighbor ID with background matching node color
+                    if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
+                        const idContainer = document.createElement('span');
+                        idContainer.className = 'neighbor-id';
+                        const identifiersText = node.identifiers.join(', ');
+                        idContainer.textContent = identifiersText;
+
+                        // Set up the container to check for truncation and show tooltip if needed
+                        idContainer.addEventListener('mouseenter', () => {
+                            // Check if text is truncated (scrollWidth > clientWidth means text is truncated)
+                            if (idContainer.scrollWidth > idContainer.clientWidth) {
+                                // Text is truncated, show tooltip
+                                const tooltip = this._getTooltipElement();
+                                tooltip.textContent = identifiersText;
+                                tooltip.style.display = 'block';
+
+                                // Position the tooltip
+                                setTimeout(() => {
+                                    const rect = idContainer.getBoundingClientRect();
+                                    tooltip.style.left = `${rect.left}px`;
+                                    tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+
+                                    // Make sure the tooltip doesn't go off-screen
+                                    if (parseFloat(tooltip.style.left) < 5) {
+                                        tooltip.style.left = '5px';
+                                    }
+
+                                    const rightEdge = parseFloat(tooltip.style.left) + tooltip.offsetWidth;
+                                    if (rightEdge > window.innerWidth - 5) {
+                                        tooltip.style.left = `${window.innerWidth - tooltip.offsetWidth - 5}px`;
+                                    }
+
+                                    if (parseFloat(tooltip.style.top) < 5) {
+                                        tooltip.style.top = `${rect.bottom + 5}px`;
+                                    }
+                                }, 0);
+                            }
+                        });
+
+                        idContainer.addEventListener('mouseleave', () => {
+                            let tooltip = document.getElementById('custom-tooltip');
+                            if (tooltip) {
+                                tooltip.style.display = 'none';
+                            }
+                        });
+
+                        rightColumn.appendChild(idContainer);
+                    }
+
+                    neighborRowDiv.appendChild(leftColumn);
+                    neighborRowDiv.appendChild(rightColumn);
+
+                    neighborRowElements.push(neighborRowDiv);
+                }
+            } else {
+                // When rendering neighbors of a node in the schema view,
+                // each row is grouped by neighbor and edge direction.
+                // It has all associated edges with that neighbor of that
+                // direction type in that particular row.
+                /** @type {Object.<NodeUID, Array<Edge>>} */
+                const neighborMap = {};
+
+                for (const edge of edges) {
+                    const neighbor = this.store.getNode(edge.sourceUid === selectedObject.uid ? edge.destinationUid : edge.sourceUid);
+                    if (!neighborMap[neighbor.uid]) {
+                        neighborMap[neighbor.uid] = [];
+                    }
+
+                    neighborMap[neighbor.uid].push(edge);
+                }
+
+                for (const neighborUid of Object.keys(neighborMap)) {
+                    const neighbor = this.store.getNode(neighborUid);
+                    const edges = neighborMap[neighborUid];
+
+                    const incomingEdges = edges.filter(edge => edge.destinationUid === selectedObject.uid);
+                    const outgoingEdges = edges.filter(edge => edge.sourceUid === selectedObject.uid);
+
+                    /**
+                     * @param {Array<Edge>} edges
+                     * @returns {HTMLElement}
+                     */
+                    const createSchemaNeighborRow = (edges, isSource) => {
+                        const neighborRowDiv = document.createElement('div');
+                        neighborRowDiv.className = 'neighbor-row schema-row';
+
+                        const leftColumn = document.createElement('div');
+                        leftColumn.className = 'neighbor-column-left';
+
+                        const rightColumn = document.createElement('div');
+                        rightColumn.className = 'neighbor-column-right';
+
+                        const edgeDirectionIcon = document.createElement('button');
+                        edgeDirectionIcon.className = 'edge-direction-btn circular-hover-effect';
+                        edgeDirectionIcon.innerHTML = isSource ?
+                            this.outgoingEdgeSvg : this.incomingEdgeSvg;
+                        leftColumn.appendChild(edgeDirectionIcon);
+
+                        const nodeChip = this._nodeChipHtml(neighbor, false);
+                        rightColumn.appendChild(nodeChip);
+
+                        for (const edge of edges) {
+                            const edgeChip = this._edgeChipHtml(edge, false);
+                            rightColumn.appendChild(edgeChip);
+                        }
+
+                        neighborRowDiv.appendChild(leftColumn);
+                        neighborRowDiv.appendChild(rightColumn);
+
+                        return neighborRowDiv
+                    }
+
+                    if (outgoingEdges.length) {
+                        const neighborRowDiv = createSchemaNeighborRow(outgoingEdges, true);
+                        neighborRowElements.push(neighborRowDiv);
+                    }
+
+                    if (incomingEdges.length) {
+                        const neighborRowDiv = createSchemaNeighborRow(incomingEdges, false);
+                        neighborRowElements.push(neighborRowDiv);
+                    }
+                }
             }
         } else if (selectedObject instanceof GraphEdge) {
             const container = document.createElement('div');
