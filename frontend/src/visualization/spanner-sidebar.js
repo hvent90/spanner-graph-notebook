@@ -1137,19 +1137,6 @@ class SidebarConstructor {
 
                 const leftColumn = document.createElement('div');
                 leftColumn.className = 'neighbor-column-left';
-                
-                leftColumn.addEventListener('mouseenter', () => {
-                    if (this.store.config.selectedGraphObject !== node) {
-                        this.store.setFocusedObject(node);
-                    }
-                });
-                leftColumn.addEventListener('mouseleave', () => {
-                    this.store.setFocusedObject(null);
-                });
-                leftColumn.addEventListener('click', () => {
-                    this.store.setFocusedObject(null);
-                    this.store.setSelectedObject(node);
-                });
 
                 const edgeDirectionIcon = document.createElement('button');
                 edgeDirectionIcon.className = 'edge-direction-btn circular-hover-effect';
@@ -1162,6 +1149,19 @@ class SidebarConstructor {
                     `Source edge: ${edge.getLabels()}`;
                 
                 this._createTooltip(edgeDirectionIcon, tooltipText);
+
+                edgeDirectionIcon.addEventListener('mouseenter', () => {
+                    if (this.store.config.selectedGraphObject !== edge) {
+                        this.store.setFocusedObject(edge);
+                    }
+                });
+                edgeDirectionIcon.addEventListener('mouseleave', () => {
+                    this.store.setFocusedObject(null);
+                });
+                edgeDirectionIcon.addEventListener('click', () => {
+                    this.store.setFocusedObject(null);
+                    this.store.setSelectedObject(edge);
+                });
                 
                 leftColumn.appendChild(edgeDirectionIcon);
 
@@ -1183,6 +1183,22 @@ class SidebarConstructor {
                     this.store.setFocusedObject(null);
                     this.store.setSelectedObject(node);
                 });
+
+                for (const element of [nodeChip, rightColumn])
+                {
+                    element.addEventListener('mouseenter', () => {
+                        if (this.store.config.selectedGraphObject !== node) {
+                            this.store.setFocusedObject(node);
+                        }
+                    });
+                    element.addEventListener('mouseleave', () => {
+                        this.store.setFocusedObject(null);
+                    });
+                    element.addEventListener('click', () => {
+                        this.store.setFocusedObject(null);
+                        this.store.setSelectedObject(node);
+                    });
+                }
 
                 // Node Neighbor ID with background matching node color
                 if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
