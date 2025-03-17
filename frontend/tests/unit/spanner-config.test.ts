@@ -16,13 +16,13 @@
  */
 
 // @ts-ignore
-const GraphConfig = require('../../src/spanner-config.js');
+import GraphConfig from '../../src/spanner-config.js';
 // @ts-ignore
-const GraphNode = require('../../src/models/node.js');
+import GraphNode from '../../src/models/node.js';
 // @ts-ignore
-const Edge = require('../../src/models/edge.js');
+import GraphEdge from '../../src/models/edge.js';
 // @ts-ignore
-const Schema = require('../../src/models/schema.js');
+import Schema from '../../src/models/schema.js';
 
 describe('GraphConfig', () => {
     let mockNodesData = [

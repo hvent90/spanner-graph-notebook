@@ -16,6 +16,7 @@
 import GraphConfig from './spanner-config';
 import GraphEdge from "./models/edge";
 import GraphNode from "./models/node";
+import GraphObject from "./models/graph-object";
 
 /**
  * @callback GraphConfigCallback
