@@ -979,7 +979,7 @@ class GraphVisualization {
                         !this.store.edgeIsConnectedToFocusedNode(link) &&
                         !this.store.edgeIsConnectedToSelectedNode(link) &&
                         link !== this.store.config.focusedGraphObject && // Check for focused edge
-                        link !== this.store.config.selectedGraphObject) { // Check for selected edge
+                        link !== this.store.config.selectedGraphObject) {
 
                         const lightenAmount = 0.48;
                         const originalColor = edgeDesign.color;
@@ -1117,8 +1117,15 @@ class GraphVisualization {
                         }
 
                         let label = node.getLabels();
-                        if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT && node.identifiers.length > 0) {
-                            label += ` (${node.identifiers.join(', ')})`;
+                        let keyProperty = '';
+                        if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
+                            keyProperty = this.store.getKeyProperty(node);
+                            if (node === this.focusedNode) {
+                                console.log(keyProperty);
+                            }
+                            if (keyProperty) {
+                                label += ` (${keyProperty})`;
+                            }
                         }
 
                         // Draw the label's background
@@ -1170,7 +1177,7 @@ class GraphVisualization {
 
                             ctx.restore();
                         } else if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
-                            // "NodeType <b>(identifiers)</b>"
+                            // "NodeType <b>(key property)</b>"
                             // requires two separate drawings
                             ctx.textAlign = 'left';
                             ctx.textBaseline = 'middle';
@@ -1193,8 +1200,8 @@ class GraphVisualization {
                             ctx.font = `${fontSize}px 'Google Sans', Roboto, Arial, sans-serif`;
                             ctx.fillText(prefixLabel, prefixLabelX, textVerticalOffset);
 
-                            // 5. Draw bold identifiers part right after
-                            const suffixLabel = `(${node.identifiers.join(', ')})`;
+                            // 5. Draw bold key property right after
+                            const suffixLabel = `(${keyProperty})`;
                             const suffixLabelX = prefixLabelX + prefixRect.width;  // Start where previous text ended
                             ctx.font = `bold ${fontSize}px 'Google Sans', Roboto, Arial, sans-serif`;
                             ctx.fillText(suffixLabel, suffixLabelX, textVerticalOffset);

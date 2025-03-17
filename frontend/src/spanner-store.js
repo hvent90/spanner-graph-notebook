@@ -117,7 +117,8 @@ class GraphStore {
         LAYOUT_MODE_CHANGE: Symbol('layoutModeChange'),
         SHOW_LABELS: Symbol('showLabels'),
         NODE_EXPANSION_REQUEST: Symbol('nodeExpansionRequest'),
-        GRAPH_DATA_UPDATE: Symbol('graphDataUpdate')
+        GRAPH_DATA_UPDATE: Symbol('graphDataUpdate'),
+        LABEL_PROPERTY_CHANGE: Symbol('labelPropertyChange'),
     });
 
     /**
@@ -132,6 +133,7 @@ class GraphStore {
      * @property {Array<ShowLabelsCallback>} [GraphStore.EventTypes.SHOW_LABELS]
      * @property {Array<NodeExpansionRequestCallback>} [GraphStore.EventTypes.NODE_EXPANSION_REQUEST]
      * @property {Array<GraphDataUpdateCallback>} [GraphStore.EventTypes.GRAPH_DATA_UPDATE]
+     * @property {Array<LabelPropertyChangeCallback>} [GraphStore.EventTypes.LABEL_PROPERTY_CHANGE]
      */
     eventListeners = {
         [GraphStore.EventTypes.CONFIG_CHANGE]: [],
@@ -142,7 +144,8 @@ class GraphStore {
         [GraphStore.EventTypes.LAYOUT_MODE_CHANGE]: [],
         [GraphStore.EventTypes.SHOW_LABELS]: [],
         [GraphStore.EventTypes.NODE_EXPANSION_REQUEST]: [],
-        [GraphStore.EventTypes.GRAPH_DATA_UPDATE]: []
+        [GraphStore.EventTypes.GRAPH_DATA_UPDATE]: [],
+        [GraphStore.EventTypes.LABEL_PROPERTY_CHANGE]: [],
     };
 
     /**
@@ -788,6 +791,38 @@ class GraphStore {
 
         console.error(`Property ${propertyName} not found in any matching node tables for labels: ${node.labels.join(', ')}`);
         return null;
+    }
+
+    /**
+     * Sets the property to be used for node labels in schema view
+     * @param {string} propertyKey - The property key to use
+     * @param {GraphObject} graphObject - The graph object to associate with this property key
+     */
+    setKeyProperty(propertyKey, graphObject) {
+        if (!propertyKey || typeof propertyKey !== 'string' || !(graphObject instanceof GraphObject)) {
+            return;
+        }
+
+        const labelString = graphObject.getLabels();
+
+        // Store the selected property in the config's keyProperties map
+        this.config.keyProperties[labelString] = propertyKey;
+        
+        // Notify listeners about the change
+        this.eventListeners[GraphStore.EventTypes.LABEL_PROPERTY_CHANGE]
+            .forEach(callback => callback(propertyKey, labelString, this.config));
+    }
+
+    /**
+     * @param {GraphObject} graphObject
+     * @returns {String}
+     */
+    getKeyProperty(graphObject) {
+        if (graphObject instanceof GraphObject) {
+            return graphObject.properties[this.config.keyProperties[graphObject.getLabels()]];
+        }
+
+        return '';
     }
 }
 
