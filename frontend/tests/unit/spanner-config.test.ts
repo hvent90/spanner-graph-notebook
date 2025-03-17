@@ -157,7 +157,7 @@ describe('GraphConfig', () => {
 
             const edge = config.edges[Object.keys(config.edges)[0]];
             expect(Object.keys(config.edges).length).toBe(1);
-            expect(edge).toBeInstanceOf(Edge);
+            expect(edge).toBeInstanceOf(GraphEdge);
             expect(edge.labels).toEqual(['WORKS_AT']);
             expect(edge.sourceUid).toEqual("1");
             expect(edge.destinationUid).toEqual("2");

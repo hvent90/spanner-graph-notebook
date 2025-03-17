@@ -86,7 +86,7 @@ class GraphServer {
     }
 
     /**
-     * @param {Node} node
+     * @param {GraphNode} node
      * @param {Edge.Direction} direction
      * @param {string|undefined} edgeLabel
      * @param {{key: string, value: string|number, type: PropertyDeclarationType}[]} properties
@@ -207,6 +207,4 @@ class GraphServer {
     }
 }
 
-if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    module.exports = GraphServer;
-}
+export default GraphServer;
