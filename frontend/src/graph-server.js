@@ -87,7 +87,7 @@ class GraphServer {
 
     /**
      * @param {GraphNode} node
-     * @param {Edge.Direction} direction
+     * @param {GraphEdge.Direction} direction
      * @param {string|undefined} edgeLabel
      * @param {{key: string, value: string|number, type: PropertyDeclarationType}[]} properties
      */

@@ -70,7 +70,7 @@ import GraphObject from "./models/graph-object";
 /**
  * @callback NodeExpansionRequestCallback
  * @param {GraphNode} node
- * @param {Edge.Direction} direction
+ * @param {GraphEdge.Direction} direction
  * @param {String} edgeLabel
  * @param {{key: string, value: string|number, type: PropertyDeclarationType}[]} properties
  * @param {GraphConfig} config - The graph configuration
@@ -623,7 +623,7 @@ class GraphStore {
 
     /**
      * @param {Node} node
-     * @param {Edge.Direction} direction
+     * @param {GraphEdge.Direction} direction
      * @param {string|undefined} edgeLabel
      */
     requestNodeExpansion(node, direction, edgeLabel) {

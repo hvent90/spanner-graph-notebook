@@ -1460,17 +1460,17 @@ class GraphVisualization {
         }
 
         const edgeButtons = this.store.getEdgeTypesOfNodeSorted(node).map(({label, direction}) => {
-           const directionSvg = direction === Edge.Direction.INCOMING.description ? this.incomingEdgeSvg : this.outgoingEdgeSvg;
+           const directionSvg = direction === GraphEdge.Direction.INCOMING.description ? this.incomingEdgeSvg : this.outgoingEdgeSvg;
 
            return `<div class="context-menu-item node-expand-edge" data-label="${label}" data-direction="${direction}">${directionSvg} ${label}</div>`;
         });
 
         const html = `
             <div class="graph-context-menu">
-                <div class="context-menu-item node-expand-edge" data-direction="${Edge.Direction.INCOMING.description}" data-label="">
+                <div class="context-menu-item node-expand-edge" data-direction="${GraphEdge.Direction.INCOMING.description}" data-label="">
                     ${this.incomingEdgeSvg} All incoming edges
                 </div>
-                <div class="context-menu-item node-expand-edge" data-direction="${Edge.Direction.OUTGOING.description}" data-label="">
+                <div class="context-menu-item node-expand-edge" data-direction="${GraphEdge.Direction.OUTGOING.description}" data-label="">
                     ${this.outgoingEdgeSvg} All outgoing edges
                 </div>
                 <div class="context-menu-divider"></div>
