@@ -22,6 +22,8 @@ import SpannerMenu from './visualization/spanner-menu.js';
 import SpannerTable from './visualization/spanner-table.js';
 import GraphVisualization from './visualization/spanner-forcegraph.js';
 
+console.log('testing CI for updating javascript bundle');
+
 class SpannerApp {
     /**
      * Unique ID to prevent namespace collisions across multiple iPython cells
