@@ -6,5 +6,5 @@ include CONTRIBUTING.md
 include spanner_graphs/*.csv
 include spanner_graphs/*.json
 include tests/*.json
-include NOTICE
-include THIRD_PARTY_LICENSES.txt
+include third_party/index.js
+include third_party/LICENSE.js

@@ -55,7 +55,7 @@ class GraphVisualization {
 
     /**
      * The Edge that the user has clicked on. It will be visually highlighted.
-     * @type {?Edge}
+     * @type {?GraphEdge}
      */
     selectedEdge = null;
 
@@ -1253,7 +1253,7 @@ class GraphVisualization {
                 .linkCanvasObject(
                     /**
                      * Draw labels on edges
-                     * @param {Edge} link - The link object
+                     * @param {GraphEdge} link - The link object
                      * @param {CanvasRenderingContext2D} ctx - The canvas rendering context
                      * @param {number} globalScale - The global scale of the graph
                      */

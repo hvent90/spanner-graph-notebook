@@ -372,7 +372,7 @@ class GraphConfig {
 
     /**
      * Update the indexing of node and edge relationships
-     * @param {Edge} edge
+     * @param {GraphEdge} edge
      * @private
      */
     _updateEdgeIndices(edge) {

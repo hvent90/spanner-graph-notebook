@@ -358,7 +358,7 @@ class GraphStore {
 
     /**
      * Check if an edge is connected to a specific node.
-     * @param {Edge} edge - The edge to check.
+     * @param {GraphEdge} edge - The edge to check.
      * @param {GraphNode} node - The node to check connection with.
      * @returns {boolean} True if the edge is connected to the node, false otherwise.
      */
@@ -386,7 +386,7 @@ class GraphStore {
 
     /**
      * Check if an edge is connected to the focused node.
-     * @param {Edge} edge - The edge to check.
+     * @param {GraphEdge} edge - The edge to check.
      * @returns {boolean} True if the edge is connected to the focused node, false otherwise.
      */
     edgeIsConnectedToFocusedNode(edge) {
@@ -395,7 +395,7 @@ class GraphStore {
 
     /**
      * Check if an edge is connected to the selected node.
-     * @param {Edge} edge - The edge to check.
+     * @param {GraphEdge} edge - The edge to check.
      * @returns {boolean} True if the edge is connected to the selected node, false otherwise.
      */
     edgeIsConnectedToSelectedNode(edge) {
@@ -622,7 +622,7 @@ class GraphStore {
     }
 
     /**
-     * @param {Node} node
+     * @param {GraphNode} node
      * @param {GraphEdge.Direction} direction
      * @param {string|undefined} edgeLabel
      */
@@ -639,7 +639,7 @@ class GraphStore {
 
     /**
      * Gets the type of a specific property for a node.
-     * @param {Node} node - The node to get the property type from
+     * @param {GraphNode} node - The node to get the property type from
      * @param {string} propertyName - The name of the property to get the type for
      * @returns {PropertyDeclarationType|null} The type of the property, or null if not found
      */

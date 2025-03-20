@@ -93,7 +93,7 @@ class SidebarConstructor {
 
     /**
      * Helper method
-     * @param {Edge} edge
+     * @param {GraphEdge} edge
      * @param {Boolean} clickable
      * @return {HTMLSpanElement}
      */
