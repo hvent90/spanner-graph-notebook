@@ -59,7 +59,7 @@ def generate_visualization_html(query: str, port: int, params: str):
         template_content = _load_file([search_dir, 'frontend', 'static', 'jupyter.html'])
         
         # Load the JavaScript bundle directly
-        js_file_path = os.path.join(search_dir, 'frontend', 'jupyter-dist', 'index.js')
+        js_file_path = os.path.join(search_dir, 'third_party', 'index.js')
         try:
             with open(js_file_path, 'r', encoding='utf-8') as js_file:
                 bundled_js_code = f'<script>{js_file.read()}</script>'
