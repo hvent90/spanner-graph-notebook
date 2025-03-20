@@ -33,7 +33,7 @@ This will build the bundle and start a local server at http://localhost:8000. Yo
 
 ```bash
 # Build the bundle for production
-npm run build:jupyter
+npm run build:notebook
 ```
 
-This will create a bundled and version-controlled JavaScript file in the `jupyter-dist` directory that includes all dependencies.
+This will create a bundled and version-controlled JavaScript file in the `third_party` directory that includes all dependencies.
