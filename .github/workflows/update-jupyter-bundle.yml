@@ -1,0 +1,44 @@
+name: Update Jupyter Bundle
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/src/**/*.js'
+      - 'frontend/src/**/*.ts'
+      - 'frontend/src/**/*.jsx'
+      - 'frontend/src/**/*.tsx'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+
+jobs:
+  build-jupyter-bundle:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+        
+      - name: Build Jupyter bundle
+        working-directory: ./frontend
+        run: npm run build:jupyter
+        
+      - name: Commit and push if bundle changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          # Create directory if it doesn't exist
+          if [ ! -d "frontend/jupyter-dist/" ]; then
+            mkdir -p frontend/jupyter-dist/
+            echo "Created missing frontend/jupyter-dist/ directory"
+          fi
+          git add frontend/jupyter-dist/
+          git diff --staged --quiet || (git commit -m "chore: Update Javascript bundle for notebook environments [skip ci]" && git push)
