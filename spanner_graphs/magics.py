@@ -42,6 +42,8 @@ from spanner_graphs.graph_visualization import generate_visualization_html
 
 singleton_server_thread: Thread = None
 
+print("CI for updating javascript bundle should not be triggered")
+
 def _load_file(path: list[str]) -> str:
         file_path = os.path.sep.join(path)
         if not os.path.exists(file_path):
