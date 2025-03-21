@@ -389,7 +389,7 @@ limitations under the License.
             pointer-events: none;
         }
     </style>
-    <script type="module" onload="initializeApp()" src="../dist/index.js"></script>
+    <script type="module" src="../src/index.js"></script>
 </head>
 <body>
     <div class="visualization-container">
@@ -456,8 +456,6 @@ LIMIT 50"></textarea>
     </div>
 
     <script>
-        const INJECTED_PORT = '{{PORT}}';
-
         function initializeApp() {
             const mount = document.querySelector('.mount-spanner-test');
             const project = document.getElementById('project').value;
@@ -495,7 +493,7 @@ LIMIT 50"></textarea>
 
             window.app = new SpannerApp({
                 id: 'spanner-test',
-                port: INJECTED_PORT,
+                port: 8975,
                 params: JSON.stringify(params),
                 mount: mount,
                 query: query
