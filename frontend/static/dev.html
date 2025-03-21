@@ -475,7 +475,8 @@ LIMIT 50"></textarea>
                 project,
                 instance,
                 database,
-                query
+                query,
+                mock
             }));
 
             // Clear previous instance if it exists
@@ -509,9 +510,8 @@ LIMIT 50"></textarea>
                 document.getElementById('instance').value = config.instance || 'my-instance';
                 document.getElementById('database').value = config.database || 'my-database';
                 document.getElementById('query').value = config.query || '';
+                document.getElementById('mock').checked = config.mock;
             }
-            // Always ensure mock is checked on initial load
-            document.getElementById('mock').checked = true;
         }
 
         function toggleCommandPalette() {
@@ -543,6 +543,7 @@ LIMIT 50"></textarea>
 
         // Load saved config but wait for SpannerApp to be available
         loadSavedConfig();
+        toggleCommandPalette();
     </script>
 </body>
 </html> 
