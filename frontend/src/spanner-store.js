@@ -277,6 +277,35 @@ class GraphStore {
     }
 
     /**
+     * Get edges associated with a node.
+     * Edge are grouped by neighbor, and then sorted by incoming/outgoing.
+     * @param {Node} node - The node to get edges for.
+     * @returns {Array<Edge>} A sorted array of edges associated with the node.
+     */
+    getEdgesOfNodeSorted(node) {
+        return Array.from(this.getEdgesOfNode(node)).sort((a, b) => {
+            const neighborA = this.getNode(a.sourceUid === node.uid ? a.destinationUid : a.sourceUid);
+            const neighborB = this.getNode(b.sourceUid === node.uid ? b.destinationUid : b.sourceUid);
+
+            if (neighborA instanceof Node && neighborB instanceof Node) {
+                const labelCompare = neighborA.getLabels().localeCompare(neighborB.getLabels());
+                if (labelCompare !== 0) {
+                    return labelCompare;
+                }
+            }
+
+            const directionA = a.sourceUid === node.uid ? 'OUTGOING' : 'INCOMING';
+            const directionB = b.sourceUid === node.uid ? 'OUTGOING' : 'INCOMING';
+
+            if (directionA !== directionB) {
+                return directionA === 'INCOMING' ? -1 : 1;
+            }
+
+            return 0;
+        });
+    }
+
+    /**
      * Returns all edge types, sorted by:
      * - incoming, alphabetized
      * - outgoing, alphabetized
@@ -285,11 +314,11 @@ class GraphStore {
      */
     getEdgeTypesOfNodeSorted(node) {
         return this.getEdgeTypesOfNode(node).sort((a, b) => {
-           if (a.direction !== b.direction) {
-               return a.direction === 'INCOMING' ? -1 : 1;
-           }
+            if (a.direction !== b.direction) {
+                return a.direction === 'INCOMING' ? -1 : 1;
+            }
 
-           return a.label.localeCompare(b.label);
+            return a.label.localeCompare(b.label);
         });
     }
 
@@ -614,7 +643,7 @@ class GraphStore {
         if (!hasSelectedObject && edgeIsFocused) {
             return this.config.edgeDesign.focused;
         }
-        
+
         const isNeighbor = this.edgeIsConnectedToFocusedNode(edge) ||
             this.edgeIsConnectedToSelectedNode(edge);
         if (isNeighbor) {
@@ -730,7 +759,7 @@ class GraphStore {
         const schema = this.config.schema.rawSchema;
 
         // Find matching node tables for this node's labels
-        const matchingNodeTables = schema.nodeTables.filter(nodeTable => 
+        const matchingNodeTables = schema.nodeTables.filter(nodeTable =>
             node.labels.some(label => nodeTable.labelNames.includes(label))
         );
 
@@ -744,13 +773,13 @@ class GraphStore {
             const propertyDef = nodeTable.propertyDefinitions.find(
                 prop => prop.propertyDeclarationName === propertyName
             );
-            
+
             if (propertyDef) {
                 // Find the property declaration to get its type
                 const propertyDecl = schema.propertyDeclarations.find(
                     decl => decl.name === propertyDef.propertyDeclarationName
                 );
-                
+
                 if (propertyDecl) {
                     return propertyDecl.type;
                 }
@@ -759,6 +788,22 @@ class GraphStore {
 
         console.error(`Property ${propertyName} not found in any matching node tables for labels: ${node.labels.join(', ')}`);
         return null;
+    }
+
+    /**
+     * @param {GraphObject} graphObject
+     * @returns {String}
+     */
+    getKeyProperties(graphObject) {
+        if (graphObject instanceof GraphObject) {
+            const values = [];
+            for (const name of graphObject.key_property_names) {
+                values.push(graphObject.properties[name]);
+            }
+            return values.join(', ');
+        }
+
+        return '';
     }
 }
 

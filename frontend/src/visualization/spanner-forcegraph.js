@@ -1117,8 +1117,12 @@ class GraphVisualization {
                         }
 
                         let label = node.getLabels();
-                        if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT && node.identifiers.length > 0) {
-                            label += ` (${node.identifiers.join(', ')})`;
+                        let keyProperty = '';
+                        if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
+                            keyProperty = this.store.getKeyProperties(node);
+                            if (keyproperty,length) {
+                                label += ` (${keyProperty})`;
+                            }
                         }
 
                         // Draw the label's background
@@ -1170,7 +1174,7 @@ class GraphVisualization {
 
                             ctx.restore();
                         } else if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
-                            // "NodeType <b>(identifiers)</b>"
+                            // "NodeType <b>(key properties)</b>"
                             // requires two separate drawings
                             ctx.textAlign = 'left';
                             ctx.textBaseline = 'middle';
@@ -1193,8 +1197,8 @@ class GraphVisualization {
                             ctx.font = `${fontSize}px 'Google Sans', Roboto, Arial, sans-serif`;
                             ctx.fillText(prefixLabel, prefixLabelX, textVerticalOffset);
 
-                            // 5. Draw bold identifiers part right after
-                            const suffixLabel = `(${node.identifiers.join(', ')})`;
+                            // 5. Draw bold key properties right after
+                            const suffixLabel = `(${keyProperty})`;
                             const suffixLabelX = prefixLabelX + prefixRect.width;  // Start where previous text ended
                             ctx.font = `bold ${fontSize}px 'Google Sans', Roboto, Arial, sans-serif`;
                             ctx.fillText(suffixLabel, suffixLabelX, textVerticalOffset);
