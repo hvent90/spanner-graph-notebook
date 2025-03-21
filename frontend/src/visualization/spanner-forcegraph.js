@@ -1120,7 +1120,7 @@ class GraphVisualization {
                         let keyProperty = '';
                         if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
                             keyProperty = this.store.getKeyProperties(node);
-                            if (keyproperty,length) {
+                            if (keyProperty.length) {
                                 label += ` (${keyProperty})`;
                             }
                         }

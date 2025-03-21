@@ -683,7 +683,7 @@ class GraphStore {
         // Add the "All incoming edges" option
         const incomingOption = document.createElement('div');
         incomingOption.className = 'context-menu-item node-expand-edge';
-        incomingOption.dataset.direction = Edge.Direction.INCOMING.description;
+        incomingOption.dataset.direction = GraphEdge.Direction.INCOMING.description;
         incomingOption.dataset.label = '';
         incomingOption.innerHTML = `${this.incomingEdgeSvg} All incoming edges`;
         menu.appendChild(incomingOption);
@@ -691,7 +691,7 @@ class GraphStore {
         // Add the "All outgoing edges" option
         const outgoingOption = document.createElement('div');
         outgoingOption.className = 'context-menu-item node-expand-edge';
-        outgoingOption.dataset.direction = Edge.Direction.OUTGOING.description;
+        outgoingOption.dataset.direction = GraphEdge.Direction.OUTGOING.description;
         outgoingOption.dataset.label = '';
         outgoingOption.innerHTML = `${this.outgoingEdgeSvg} All outgoing edges`;
         menu.appendChild(outgoingOption);
@@ -703,7 +703,7 @@ class GraphStore {
 
         // Add edge-specific options
         this.getEdgeTypesOfNodeSorted(node).forEach(({label, direction}) => {
-            const directionSvg = direction === Edge.Direction.INCOMING.description ?
+            const directionSvg = direction === GraphEdge.Direction.INCOMING.description ?
                 this.incomingEdgeSvg : this.outgoingEdgeSvg;
 
             const edgeOption = document.createElement('div');
@@ -807,6 +807,4 @@ class GraphStore {
     }
 }
 
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GraphStore;
-}
+export default GraphStore;

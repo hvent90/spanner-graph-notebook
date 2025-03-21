@@ -437,7 +437,7 @@ class SidebarConstructor {
         this.title();
 
         if (this.store.config.selectedGraphObject) {
-            if (this.store.config.selectedGraphObject instanceofGraphNode) {
+            if (this.store.config.selectedGraphObject instanceof GraphNode) {
                 this.properties();
                 this.neighbors();
             } else {
@@ -846,13 +846,14 @@ class SidebarConstructor {
 
             if (selectedObject instanceof GraphNode) {
                 content.appendChild(this._nodeChipHtml(selectedObject));
-                overflowButton = this._initOverflowButton();
 
                 if (this.store.config.viewMode === GraphConfig.ViewModes.DEFAULT) {
                     const property = document.createElement('span');
                     property.className = 'selected-object-label';
                     property.textContent = this.store.getKeyProperties(selectedObject);
                     content.appendChild(property);
+
+                    overflowButton = this._initOverflowButton();
                 }
             }
 
