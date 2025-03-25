@@ -764,8 +764,15 @@ class SidebarConstructor {
                     gap: 8px;
                 }
                 
-                .schema-row .neighbor-column-left, .schema-row .neighbor-column-right {
+                .schema-row .neighbor-column-left {
                     width: auto;
+                }
+                
+                .schema-row .neighbor-column-right {
+                    flex: 1;
+                }
+                
+                .schema-row .neighbor-column-left, .schema-row .neighbor-column-right {
                     overflow: initial;
                     text-overflow: initial;
                     cursor: initial;
