@@ -474,6 +474,7 @@ class SidebarConstructor {
                     justify-content: space-between;
                     align-items: center;
                     border-bottom: 1px solid #DADCE0;
+                    overflow: hidden;
                 }
                 
                 .panel-header-buttons {
@@ -481,6 +482,7 @@ class SidebarConstructor {
                     align-items: center;
                     gap: 8px;
                     margin-left: auto;
+                    min-width: 60px;
                 }
                 
                 .schema-header {
@@ -507,27 +509,39 @@ class SidebarConstructor {
                     display: flex;
                     align-items: center;
                     height: 28px;
+                    max-width: 100%;
+                    overflow: hidden;
                 }
 
                 .panel-header .node-chip {
-                    max-width: 40%;
+                    max-width: 35%;
+                    min-width: 24px;
                 }
                 
                 .panel-header .panel-header-content {
                     display: flex;
                     align-items: center;
                     flex: 1;
+                    max-width: 75%;
+                    overflow: hidden;
                 }
                 
                 .panel-header .panel-header-content.schema-header-content {
                     font-size: 14px;
                     font-weight: 500;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
 
                 .panel-header .selected-object-label {
                     font-size: 16px;
                     font-weight: 600;
                     flex: 1;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    max-width: 100%;
                 }
                 
                 .schema-header h2 {
@@ -858,6 +872,83 @@ class SidebarConstructor {
                     const property = document.createElement('span');
                     property.className = 'selected-object-label';
                     property.textContent = this.store.getKeyProperties(selectedObject);
+                    
+                    // Add tooltip functionality if text is truncated
+                    property.addEventListener('mouseenter', () => {
+                        if (property.scrollWidth > property.clientWidth) {
+                            // Text is truncated, show tooltip
+                            const tooltip = this._getTooltipElement();
+                            tooltip.textContent = property.textContent;
+                            tooltip.style.display = 'block';
+                            
+                            // Position the tooltip
+                            setTimeout(() => {
+                                const rect = property.getBoundingClientRect();
+                                tooltip.style.left = `${rect.left}px`;
+                                tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+                                
+                                // Make sure the tooltip doesn't go off-screen
+                                if (parseFloat(tooltip.style.left) < 5) {
+                                    tooltip.style.left = '5px';
+                                }
+                                
+                                const rightEdge = parseFloat(tooltip.style.left) + tooltip.offsetWidth;
+                                if (rightEdge > window.innerWidth - 5) {
+                                    tooltip.style.left = `${window.innerWidth - tooltip.offsetWidth - 5}px`;
+                                }
+                                
+                                if (parseFloat(tooltip.style.top) < 5) {
+                                    tooltip.style.top = `${rect.bottom + 5}px`;
+                                }
+                            }, 0);
+                        }
+                    });
+                    
+                    property.addEventListener('mouseleave', () => {
+                        let tooltip = document.getElementById('custom-tooltip');
+                        if (tooltip) {
+                            tooltip.style.display = 'none';
+                        }
+                    });
+                    
+                    // Add click-to-copy functionality
+                    property.style.cursor = 'pointer';  // Show pointer cursor to indicate clickability
+                    property.addEventListener('click', () => {
+                        // Copy value to clipboard
+                        navigator.clipboard.writeText(property.textContent).then(() => {
+                            // Show copied confirmation
+                            const originalBackgroundColor = property.style.backgroundColor;
+                            const originalBorderRadius = property.style.borderRadius;
+                            
+                            // Visual feedback - briefly highlight the element
+                            property.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+                            property.style.borderRadius = '4px';
+                            
+                            // Show tooltip with "Copied!" message
+                            const tooltip = this._getTooltipElement();
+                            tooltip.textContent = 'copied to clipboard';
+                            tooltip.style.display = 'block';
+                            
+                            // Position the tooltip
+                            const rect = property.getBoundingClientRect();
+                            tooltip.style.left = `${rect.left}px`;
+                            tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
+                            
+                            // Hover background
+                            setTimeout(() => {
+                                property.style.backgroundColor = originalBackgroundColor;
+                                property.style.borderRadius = originalBorderRadius;
+                            }, 200);
+
+                            // Clear the tooltip
+                            setTimeout(() => {
+                                tooltip.style.display = 'none';
+                            }, 1000);
+                        }).catch(err => {
+                            console.error('Could not copy text: ', err);
+                        });
+                    });
+                    
                     content.appendChild(property);
 
                     overflowButton = this._initOverflowButton();
