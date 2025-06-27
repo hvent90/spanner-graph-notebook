@@ -38,6 +38,7 @@ from spanner_graphs.graph_server import (
     GraphServer, execute_query, execute_node_expansion,
     validate_node_expansion_request
 )
+from spanner_graphs.nlp_query import SpannerNL2Query, QueryType
 from spanner_graphs.graph_visualization import generate_visualization_html
 
 singleton_server_thread: Thread = None
@@ -117,7 +118,95 @@ def receive_node_expansion_request(request: dict, params_str: str):
     try:
         return JSON(execute_node_expansion(params_str, request))
     except BaseException as e:
-        return JSON({"error": e})
+        return JSON({"error": str(e)})
+
+def receive_nlp_query_request(question: str, params: str, query_type: str = "auto"):
+    """Handle NLP query requests in Google Colab environment"""
+    try:
+        params_dict = json.loads(params)
+        
+        # Convert query type string to enum
+        qt = QueryType.AUTO
+        if query_type.lower() == "sql":
+            qt = QueryType.SQL
+        elif query_type.lower() == "gql":
+            qt = QueryType.GQL
+            
+        # Create NLP service and execute query
+        nl2q = SpannerNL2Query(
+            project_id=params_dict["project"],
+            instance_id=params_dict["instance"],
+            database_id=params_dict["database"],
+            mock=params_dict.get("mock", False)
+        )
+        
+        result = nl2q.ask_question(question, qt)
+        
+        if result["success"] and "results" in result:
+            # Format like regular query results
+            from spanner_graphs.conversion import get_nodes_edges
+            
+            formatted_result = {
+                "response": {
+                    "nodes": [],
+                    "edges": [],
+                    "query": result["query"],
+                    "query_type": result["query_type"],
+                    "question": result["question"],
+                    "raw_results": result["results"],
+                    "column_names": result.get("column_names", []),
+                    "column_types": result.get("column_types", []),
+                    "row_count": result["row_count"]
+                }
+            }
+            
+            # Try to convert to graph format
+            try:
+                if result["results"] and result.get("column_names"):
+                    rows_with_headers = [dict(zip(result["column_names"], row)) for row in result["results"]]
+                    nodes, edges = get_nodes_edges(rows_with_headers)
+                    formatted_result["response"]["nodes"] = nodes
+                    formatted_result["response"]["edges"] = edges
+            except Exception:
+                pass
+                
+            return JSON(formatted_result)
+        else:
+            return JSON({
+                "error": result.get("error", "Unknown error occurred"),
+                "query": result.get("query"),
+                "query_type": result.get("query_type"),
+                "question": result.get("question")
+            })
+            
+    except Exception as e:
+        return JSON({"error": f"NLP query error: {str(e)}"})
+
+def receive_nlp_generate_request(question: str, params: str, query_type: str = "auto"):
+    """Handle NLP query generation requests in Google Colab environment"""
+    try:
+        params_dict = json.loads(params)
+        
+        # Convert query type string to enum
+        qt = QueryType.AUTO
+        if query_type.lower() == "sql":
+            qt = QueryType.SQL
+        elif query_type.lower() == "gql":
+            qt = QueryType.GQL
+            
+        # Create NLP service and generate query
+        nl2q = SpannerNL2Query(
+            project_id=params_dict["project"],
+            instance_id=params_dict["instance"],
+            database_id=params_dict["database"],
+            mock=params_dict.get("mock", False)
+        )
+        
+        result = nl2q.generate_query(question, qt)
+        return JSON(result)
+            
+    except Exception as e:
+        return JSON({"error": f"NLP generate error: {str(e)}"})
 
 @magics_class
 class NetworkVisualizationMagics(Magics):
@@ -134,6 +223,8 @@ class NetworkVisualizationMagics(Magics):
             from google.colab import output
             output.register_callback('graph_visualization.Query', receive_query_request)
             output.register_callback('graph_visualization.NodeExpansion', receive_node_expansion_request)
+            output.register_callback('graph_visualization.NlpQuery', receive_nlp_query_request)
+            output.register_callback('graph_visualization.NlpGenerate', receive_nlp_generate_request)
         else:
             global singleton_server_thread
             alive = singleton_server_thread and singleton_server_thread.is_alive()

@@ -26,6 +26,7 @@ import atexit
 from spanner_graphs.conversion import get_nodes_edges
 from spanner_graphs.exec_env import get_database_instance
 from spanner_graphs.database import SpannerQueryResult
+from spanner_graphs.nlp_query import SpannerNL2Query, QueryType
 
 # Supported types for a property
 PROPERTY_TYPE_SET = {
@@ -282,6 +283,8 @@ class GraphServer:
         "post_ping": "/post_ping",
         "post_query": "/post_query",
         "post_node_expansion": '/post_node_expansion',
+        "post_nlp_query": "/post_nlp_query",
+        "post_nlp_generate": "/post_nlp_generate",
     }
 
     _server = None
@@ -411,6 +414,115 @@ class GraphServerHandler(http.server.SimpleHTTPRequestHandler):
             self.do_error_response(e)
             return
 
+    def handle_post_nlp_query(self):
+        """Handle POST requests for natural language queries.
+        
+        Expects a JSON payload with:
+        - params: A JSON string containing connection parameters (project, instance, database)
+        - question: The natural language question
+        - query_type: Optional query type preference ("sql", "gql", "auto")
+        """
+        try:
+            data = self.parse_post_data()
+            params = json.loads(data["params"])
+            question = data["question"]
+            query_type_str = data.get("query_type", "auto")
+            
+            # Convert string to QueryType enum
+            query_type = QueryType.AUTO
+            if query_type_str.lower() == "sql":
+                query_type = QueryType.SQL
+            elif query_type_str.lower() == "gql":
+                query_type = QueryType.GQL
+            
+            # Create NLP query service
+            nl2q = SpannerNL2Query(
+                project_id=params["project"],
+                instance_id=params["instance"],
+                database_id=params["database"],
+                mock=params.get("mock", False)
+            )
+            
+            # Execute the complete pipeline
+            result = nl2q.ask_question(question, query_type)
+            
+            # If successful, format as graph data like regular queries
+            if result["success"] and "results" in result:
+                # Format the result similar to execute_query
+                formatted_result = {
+                    "response": {
+                        "nodes": [],
+                        "edges": [],
+                        "query": result["query"],
+                        "query_type": result["query_type"],
+                        "question": result["question"],
+                        "raw_results": result["results"],
+                        "column_names": result.get("column_names", []),
+                        "column_types": result.get("column_types", []),
+                        "row_count": result["row_count"]
+                    }
+                }
+                
+                # Try to convert to graph format if possible
+                try:
+                    if result["results"] and result.get("column_names"):
+                        rows_with_headers = [dict(zip(result["column_names"], row)) for row in result["results"]]
+                        nodes, edges = get_nodes_edges(rows_with_headers)
+                        formatted_result["response"]["nodes"] = nodes
+                        formatted_result["response"]["edges"] = edges
+                except Exception:
+                    # If graph conversion fails, keep raw results
+                    pass
+                
+                self.do_data_response(formatted_result)
+            else:
+                # Return error response
+                self.do_data_response({
+                    "error": result.get("error", "Unknown error occurred"),
+                    "query": result.get("query"),
+                    "query_type": result.get("query_type"),
+                    "question": result.get("question")
+                })
+                
+        except Exception as e:
+            self.do_error_response(f"NLP query error: {str(e)}")
+    
+    def handle_post_nlp_generate(self):
+        """Handle POST requests for generating queries from natural language.
+        
+        Expects a JSON payload with:
+        - params: A JSON string containing connection parameters (project, instance, database)
+        - question: The natural language question
+        - query_type: Optional query type preference ("sql", "gql", "auto")
+        """
+        try:
+            data = self.parse_post_data()
+            params = json.loads(data["params"])
+            question = data["question"]
+            query_type_str = data.get("query_type", "auto")
+            
+            # Convert string to QueryType enum
+            query_type = QueryType.AUTO
+            if query_type_str.lower() == "sql":
+                query_type = QueryType.SQL
+            elif query_type_str.lower() == "gql":
+                query_type = QueryType.GQL
+            
+            # Create NLP query service
+            nl2q = SpannerNL2Query(
+                project_id=params["project"],
+                instance_id=params["instance"],
+                database_id=params["database"],
+                mock=params.get("mock", False)
+            )
+            
+            # Generate query only (don't execute)
+            result = nl2q.generate_query(question, query_type)
+            self.do_data_response(result)
+                
+        except Exception as e:
+            self.do_error_response(f"NLP generate error: {str(e)}")
+
     def do_GET(self):
         if self.path == GraphServer.endpoints["get_ping"]:
             self.handle_get_ping()
@@ -424,5 +536,9 @@ class GraphServerHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_post_query()
         elif self.path == GraphServer.endpoints["post_node_expansion"]:
             self.handle_post_node_expansion()
+        elif self.path == GraphServer.endpoints["post_nlp_query"]:
+            self.handle_post_nlp_query()
+        elif self.path == GraphServer.endpoints["post_nlp_generate"]:
+            self.handle_post_nlp_generate()
 
 atexit.register(GraphServer.stop_server)

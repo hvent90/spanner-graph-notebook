@@ -21,6 +21,7 @@ import { Sidebar } from './visualization/spanner-sidebar.js';
 import SpannerMenu from './visualization/spanner-menu.js';
 import SpannerTable from './visualization/spanner-table.js';
 import GraphVisualization from './visualization/spanner-forcegraph.js';
+import SpannerNLP from './visualization/spanner-nlp.js';
 
 class SpannerApp {
     /**
@@ -58,6 +59,10 @@ class SpannerApp {
      * @type {SpannerTable}
      */
     table = null;
+    /**
+     * @type {SpannerNLP}
+     */
+    nlp = null;
 
     lastQuery = '';
 
@@ -125,6 +130,9 @@ class SpannerApp {
                 this.store = new GraphStore(graphConfig);
 
                 this.menu = new SpannerMenu(this.store, this.componentMounts.menu);
+                
+                // Initialize NLP interface
+                this.nlp = new SpannerNLP(this.server, this.store, this.componentMounts.menu);
 
                 this.table = new SpannerTable(this.store, this.componentMounts.table, this.componentMounts.menu);
 

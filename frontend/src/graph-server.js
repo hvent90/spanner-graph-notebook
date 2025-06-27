@@ -30,6 +30,8 @@ class GraphServer {
         getPing: '/get_ping',
         postQuery: '/post_query',
         postNodeExpansion: '/post_node_expansion',
+        postNlpQuery: '/post_nlp_query',
+        postNlpGenerate: '/post_nlp_generate',
     };
 
     /**
@@ -204,6 +206,82 @@ class GraphServer {
             .catch(error => {
                 console.error('There has been a problem with your fetch operation:', error);
             });
+    }
+
+    /**
+     * Execute natural language query and return results
+     * @param {string} question - Natural language question
+     * @param {string} queryType - Optional query type preference ('sql', 'gql', 'auto')
+     * @returns {Promise}
+     */
+    nlpQuery(question, queryType = 'auto') {
+        const request = {
+            question: question,
+            query_type: queryType,
+            params: this.params
+        };
+
+        this.isFetching = true;
+
+        if (isColab()) {
+            return google.colab.kernel.invokeFunction('graph_visualization.NlpQuery', [], request)
+                .then(result => result.data['application/json'])
+                .finally(() => this.isFetching = false);
+        }
+
+        return fetch(this.buildRoute(this.endpoints.postNlpQuery), {
+            method: 'POST',
+            body: JSON.stringify(request)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .catch(error => {
+                console.error('NLP query error:', error);
+                throw error;
+            })
+            .finally(() => this.isFetching = false);
+    }
+
+    /**
+     * Generate query from natural language without executing
+     * @param {string} question - Natural language question
+     * @param {string} queryType - Optional query type preference ('sql', 'gql', 'auto')
+     * @returns {Promise}
+     */
+    nlpGenerate(question, queryType = 'auto') {
+        const request = {
+            question: question,
+            query_type: queryType,
+            params: this.params
+        };
+
+        this.isFetching = true;
+
+        if (isColab()) {
+            return google.colab.kernel.invokeFunction('graph_visualization.NlpGenerate', [], request)
+                .then(result => result.data['application/json'])
+                .finally(() => this.isFetching = false);
+        }
+
+        return fetch(this.buildRoute(this.endpoints.postNlpGenerate), {
+            method: 'POST',
+            body: JSON.stringify(request)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .catch(error => {
+                console.error('NLP generate error:', error);
+                throw error;
+            })
+            .finally(() => this.isFetching = false);
     }
 }
 
